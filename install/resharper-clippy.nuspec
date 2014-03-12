@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>resharper-clippy</id>
+    <title>Clippy for ReSharper</title>
+    <version>0.1-alpha-20140311</version>
+    <authors>Matt Ellis</authors>
+    <owners>Matt Ellis</owners>
+    <description>A digital assistant to help you with all your ReSharper needs!</description>
+    <projectUrl>http://jetbrains.com/resharper</projectUrl>
+    <licenseUrl>https://xunitcontrib.codeplex.com/license</licenseUrl>
+    <copyright>Copyright 2014 Matt Ellis</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+      <dependency id="ReSharper" version="[8.1,8.3)" />
+    </dependencies>
+    <tags>resharper clippy</tags>
+  </metadata>
+  <files>
+    <!-- 8.1 plugin -->
+    <file src="..\src\resharper-clippy\bin\rs81\Release\CitizenMatt.ReSharper.Plugins.Clippy.8.1.dll"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\CitizenMatt.ReSharper.Plugins.Clippy.8.1.pdb"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\DaControl.dll"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\DaCore.dll"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\DoubleAgent.Control.dll"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\DoubleAgent.sxs.manifest"
+          target="ReSharper\v8.1\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs81\Release\Clippit.acs"
+          target="ReSharper\v8.1\plugins" />
+
+    <!-- 8.2 plugin -->
+    <file src="..\src\resharper-clippy\bin\rs82\Release\CitizenMatt.ReSharper.Plugins.Clippy.8.2.dll"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\CitizenMatt.ReSharper.Plugins.Clippy.8.2.pdb"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\DaControl.dll"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\DaCore.dll"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\DoubleAgent.Control.dll"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\DoubleAgent.sxs.manifest"
+          target="ReSharper\v8.2\plugins" />
+    <file src="..\src\resharper-clippy\bin\rs82\Release\Clippit.acs"
+          target="ReSharper\v8.2\plugins" />
+  </files>
+</package>

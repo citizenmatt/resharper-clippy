@@ -1,0 +1,23 @@
+﻿<Window x:Class="TestHarness.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <StackPanel>
+        <Button Content="Show/Hide" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="ShowHide"/>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox x:Name="ShowOptionsListCheckBox" Margin="10,10,0,0">Show options list</CheckBox>
+            <TextBox x:Name="NumberOfOptions" Margin="10,0,0,0" Width="25" VerticalAlignment="Bottom">8</TextBox>
+            <CheckBox x:Name="ShowSearchCheckBox" Margin="10,10,0,0">Show search text box</CheckBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Say" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="Speak"/>
+            <Button Content="Tell" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakOk"/>
+            <Button Content="Ask Yes/No" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakYesNo"/>
+            <Button Content="Ask Ok/Cancel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakOkCancel"/>
+            <Button Content="Three buttons" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakThreeButtons"/>
+            <Button Content="Hide Balloon" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="HideBalloon"/>
+        </StackPanel>
+        <Button Content="Think" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="Think"/>
+
+    </StackPanel>
+</Window>

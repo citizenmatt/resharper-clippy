@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity type="win32" name="DoubleAgent.sxs" version="1.0.0.0" />
+  <file name="DaControl.dll">
+    <comClass clsid="{1147E530-A208-11DE-ABF2-002421116FB2}" threadingModel="Apartment" />
+  </file>
+</assembly>
