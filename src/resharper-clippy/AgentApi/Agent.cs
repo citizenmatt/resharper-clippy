@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Application;
 using JetBrains.DataFlow;
-using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
@@ -66,43 +65,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Do(c => c.Hide());
         }
 
-        public void Say(string header, string message, IList<BalloonOption> options, Action<Lifetime> init)
+        public void ShowBalloon(Lifetime lifetime, string header, string message, IList<BalloonOption> options,
+            IEnumerable<string> buttons, Action<Lifetime> init)
         {
-            ShowBalloon(header, message, options, EmptyList<string>.InstanceList, init);
-        }
-
-        public void Tell(string header, string message, IList<BalloonOption> options, Action<Lifetime> init)
-        {
-            ShowBalloon(header, message, options, new[] { "OK" }, init);
-        }
-
-        public void Ask(string header, string message, IEnumerable<string> buttons, IList<BalloonOption> options, Action<Lifetime> init)
-        {
-            ShowBalloon(header, message, options, buttons, init);
-        }
-
-        public void AskYesNo(string header, string message, IList<BalloonOption> options, Action<Lifetime> init)
-        {
-            ShowBalloon(header, message, options, new[] { "Yes", "No" }, init);
-        }
-
-        public void AskOkCancel(string header, string message, IList<BalloonOption> options, Action<Lifetime> init)
-        {
-            ShowBalloon(header, message, options, new[] { "OK", "Cancel" }, init);
-        }
-
-        private void ShowBalloon(string header, string message, IList<BalloonOption> options, IEnumerable<string> buttons, Action<Lifetime> init)
-        {
-            Do(c => c.ShowBalloon(header, message, buttons, options, init));
+            Do(c => c.ShowBalloon(lifetime, header, message, options, buttons, init));
         }
 
         public ISimpleSignal AgentClicked { get; private set; }
         public ISignal<string> ButtonClicked { get; private set; }
         public IUntypedSignal BalloonOptionClicked { get; private set; }
-
-        public void HideBalloon()
-        {
-            Do(c => c.HideBalloon());
-        }
     }
 }

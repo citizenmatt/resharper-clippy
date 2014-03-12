@@ -5,7 +5,6 @@ using JetBrains.ActionManagement;
 using JetBrains.Application;
 using JetBrains.DataFlow;
 using JetBrains.Threading;
-using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -26,8 +25,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 "Ok"
             };
 
-            Action notImplementedAction = () => MessageBox.ShowError("Not implemented");
-
             // TODO: Different options depending on what's selected
             // E.g. Solution/no solution, editor visible, solution explorer
             // Get DataContext from ambient selection
@@ -46,12 +43,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             // ReSharper disable ConvertToLambdaExpression
             agent.AgentClicked.Advise(lifetime, _ =>
             {
-                agent.Ask("What do you want to do?", "(Note: Need to make list smarter based on solution open/closed, etc)", buttons, options,
+                var lifetimeDefinition = Lifetimes.Define(lifetime);
+                agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
+                    "(Note: Need to make list smarter based on solution open/closed, etc)",
+                    options, buttons,
                     balloonLifetime =>
                     {
                         agent.BalloonOptionClicked.Advise(balloonLifetime, tag =>
                         {
-                            agent.HideBalloon();
+                            lifetimeDefinition.Terminate();
                             var action = tag as Action;
                             if (action != null)
                                 action();
@@ -62,7 +62,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
                         agent.ButtonClicked.Advise(balloonLifetime, button =>
                         {
-                            agent.HideBalloon();
+                            lifetimeDefinition.Terminate();
                             if (button == "Options")
                                 ExecuteAction("ShowOptions");
                         });

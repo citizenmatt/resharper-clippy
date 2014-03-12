@@ -118,11 +118,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             // will ensure that the previous balloon is terminated.
             // Then we tell the agent to show, which gives us a lifetime for the balloon,
             // which is terminated when the balloon is hidden (or a new one is shown)
-            sequentialLifetimes.Next(refactoringLifetime =>
+            sequentialLifetimes.DefineNext((d, refactoringLifetime) =>
             {
                 var message = GetMessage();
                 var options = GetOptions(refactoringInfo);
-                agent.Ask(string.Empty, message, new[] { "Cancel" }, options,
+                agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, new[] { "Cancel" },
                     balloonLifetime =>
                     {
                         currentHighlighter = highlighter;
@@ -152,7 +152,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                         // and get rid of HideBalloon completely
                         Lifetimes.CreateIntersection2(refactoringLifetime, balloonLifetime).Lifetime.AddAction(() =>
                         {
-                            agent.HideBalloon();
+                            d.Terminate();
                             currentHighlighter = null;
                         });
                     });

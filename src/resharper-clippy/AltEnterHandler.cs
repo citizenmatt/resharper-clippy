@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.Application;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Intentions.Bulbs;
-using JetBrains.Threading;
 using JetBrains.UI.BulbMenu;
 using DataConstants = JetBrains.TextControl.DataContext.DataConstants;
 
@@ -14,17 +14,17 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     [ShellComponent]
     public class AltEnterHandler : IAltEnterHandler
     {
+        private readonly Lifetime lifetime;
         private readonly Agent agent;
         private readonly IShellLocks locks;
-        private readonly IThreading threading;
         private readonly BulbKeysBuilder bulbKeysBuilder;
         private bool setPosition = true;
 
-        public AltEnterHandler(Agent agent, IShellLocks locks, IThreading threading)
+        public AltEnterHandler(Lifetime lifetime, Agent agent, IShellLocks locks)
         {
+            this.lifetime = lifetime;
             this.agent = agent;
             this.locks = locks;
-            this.threading = threading;
             bulbKeysBuilder = new BulbKeysBuilder();
         }
 
@@ -37,6 +37,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         // TODO: Sub menus. Indicator for submenus?
         public bool HandleAction(IDataContext context)
         {
+            // TODO: Positioning should be in a common place
             var textControl = context.GetData(DataConstants.TEXT_CONTROL);
             if (textControl != null && setPosition)
             {
@@ -58,9 +59,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 return false;
 
             if (bulbItemsState.IntentionsBulbItems == null || !bulbItemsState.IntentionsBulbItems.AllBulbMenuItems.Any())
-            {
                 return false;
-            }
 
             var bulbActionKeys = bulbKeysBuilder.BuildMenuKeys(bulbItemsState.IntentionsBulbItems.AllBulbMenuItems);
 
@@ -80,26 +79,28 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 options.Add(new BalloonOption(key.RichText.ToString(), requiresSeparator, key));
             }
 
-// ReSharper disable ConvertToLambdaExpression
-            agent.Ask("What do you want to do?", "(Note: no support for submenus or keyboard yet)", new List<string> { "Cancel" }, options,
-                balloonLifetime =>
-                {
-                    agent.BalloonOptionClicked.Advise(balloonLifetime, o =>
-                    {
-                        ReadLockCookie.GuardedExecute(() =>
-                        {
-                            locks.AssertReadAccessAllowed();
-                            var action = o as BulbActionKey;
-                            if (action == null)
-                                return;
-                            agent.HideBalloon();
-                            action.Clicked();
-                        });
-                    });
+            var buttons = new List<string> {"Cancel"};
 
-                    agent.ButtonClicked.Advise(balloonLifetime, _ => agent.HideBalloon());
+            var lifetimeDefinition = Lifetimes.Define(lifetime);
+            Action<Lifetime> init = balloonLifetime =>
+            {
+                agent.BalloonOptionClicked.Advise(balloonLifetime, o =>
+                {
+                    // ReSharper disable once ConvertToLambdaExpression
+                    ReadLockCookie.GuardedExecute(() =>
+                    {
+                        lifetimeDefinition.Terminate();
+                        var action = (BulbActionKey)o;
+                        action.Clicked();
+                    });
                 });
-// ReSharper restore ConvertToLambdaExpression
+
+                agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());
+            };
+
+            agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
+                "(Note: no support for submenus or keyboard yet)",
+                options, buttons, init);
 
             return true;
         }

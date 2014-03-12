@@ -32,10 +32,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 (short)(Character.OriginalHeight * DpiUtil.DpiVerticalFactor));
         }
 
+        private void ForceBalloonHide()
+        {
+            balloon.ForceHide();
+        }
+
         public void Hide()
         {
             Character.Hide();
-            balloon.Hide();
+            ForceBalloonHide();
         }
 
         public void MoveTo(short x, short y)
@@ -49,26 +54,22 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Character.Show();
         }
 
-        public void ShowBalloon(string header, string message, IEnumerable<string> buttons, IList<BalloonOption> options, Action<Lifetime> init)
+        public void ShowBalloon(Lifetime clientLifetime, string header, string message,
+            IList<BalloonOption> options, IEnumerable<string> buttons, Action<Lifetime> init)
         {
             if (!Character.Visible)
                 Show();
 
-            balloon.CreateNew(lifetime =>
+            balloon.CreateNew(clientLifetime, balloonLifetime =>
             {
                 balloon.SetText(header, message);
-                balloon.SetButtons(buttons);
                 balloon.SetOptions(options);
+                balloon.SetButtons(buttons);
 
-                init(lifetime);
+                init(balloonLifetime);
 
                 balloon.Show(Character.Left, Character.Top, Character.Width, Character.Height);
             });
-        }
-
-        public void HideBalloon()
-        {
-            balloon.Hide();
         }
 
         public bool Visible
@@ -126,7 +127,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void ICharacterEvents.OnHide(VisibilityCauseType cause)
         {
-            balloon.Hide();
+            ForceBalloonHide();
         }
 
         void ICharacterEvents.OnShow(VisibilityCauseType cause)

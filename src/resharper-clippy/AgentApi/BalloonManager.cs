@@ -10,14 +10,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         private readonly SequentialLifetimes balloonLifetimes;
         private BalloonWindow balloonWindow;
 
-        public BalloonManager(Lifetime lifetime)
+        public BalloonManager(Lifetime overallLifetime)
         {
-            balloonLifetimes = new SequentialLifetimes(lifetime);
-            ButtonClicked = new Signal<string>(lifetime, "BalloonManager::ButtonClicked");
-            BalloonOptionClicked = new Signal<object>(lifetime, "BalloonManager::BalloonOptionClicked");
+            balloonLifetimes = new SequentialLifetimes(overallLifetime);
+            ButtonClicked = new Signal<string>(overallLifetime, "BalloonManager::ButtonClicked");
+            BalloonOptionClicked = new Signal<object>(overallLifetime, "BalloonManager::BalloonOptionClicked");
         }
 
-        public void CreateNew(Action<Lifetime> init)
+        public void CreateNew(Lifetime clientLifetime, Action<Lifetime> init)
         {
             balloonLifetimes.Next(balloonLifetime =>
             {
@@ -25,7 +25,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 balloonWindow.ButtonClicked += OnButtonClicked;
                 balloonWindow.OptionClicked += OnBalloonOptionClicked;
 
-                balloonLifetime.AddAction(() =>
+                // If the client wants to hide the balloon, they can terminate clientLifetime
+                // If another client calls CreateNew, balloonLifetimes.Next terminates
+                // balloonLifetime. Whichever lifetime terminates first will cause
+                // combinedLifetime to terminate, closing the window. 
+                var combinedLifetime = Lifetimes.CreateIntersection2(clientLifetime, balloonLifetime).Lifetime;
+                combinedLifetime.AddAction(() =>
                 {
                     if (balloonWindow != null)
                     {
@@ -34,18 +39,24 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                     }
                 });
 
-                init(balloonLifetime);
+                init(combinedLifetime);
             });
+        }
+
+        /// <summary>
+        /// You most likely don't want to call this
+        /// </summary>
+        /// <remarks>
+        /// This will hide whatever balloon is currently being shown, even if it's not yours
+        /// </remarks>
+        public void ForceHide()
+        {
+            balloonLifetimes.TerminateCurrent();
         }
 
         public void Show(short left, short top, short width, short height)
         {
             balloonWindow.Show(left, top, width, height);
-        }
-
-        public void Hide()
-        {
-            balloonLifetimes.TerminateCurrent();
         }
 
         public void UpdateTargetPosition(short x, short y)

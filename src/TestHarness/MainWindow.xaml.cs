@@ -13,7 +13,9 @@ namespace TestHarness
     public partial class MainWindow
     {
         private static readonly Random Rand = new Random();
+
         private readonly Agent agent;
+        private readonly SequentialLifetimes lifetimes;
         private bool firstTime;
 
         public MainWindow()
@@ -22,9 +24,14 @@ namespace TestHarness
 
             var lifetime = EternalLifetime.Instance;
 
+            lifetimes = new SequentialLifetimes(lifetime);
+
             var agentManager = new AgentManager(lifetime);
             agentManager.Initialise();
 
+            // Note, using this lifetime means we get alerts for ALL balloons,
+            // not just the current one (i.e. other classes could also create
+            // a balloon, and we'd get those clicks, too)
             agent = new Agent(lifetime, agentManager);
             agent.BalloonOptionClicked.Advise(lifetime,
                 tag => MessageBox.ShowExclamation(string.Format("Clicked: {0}", tag)));
@@ -81,29 +88,34 @@ namespace TestHarness
             return EmptyList<BalloonOption>.InstanceList;
         }
 
+        private void ShowBalloon(string header, string message, IList<BalloonOption> options, params string[] buttons)
+        {
+            lifetimes.Next(lifetime => agent.ShowBalloon(lifetime, header, message, options, buttons, _ => { }));
+        }
+
         private void Speak(object sender, RoutedEventArgs e)
         {
-            agent.Say(LoremIpsum(2,5), LoremIpsum(4, 15), GetOptionsList(), _ => { });
+            ShowBalloon(LoremIpsum(2,5), LoremIpsum(4, 15), GetOptionsList(), new string[0]);
         }
 
         private void SpeakOk(object sender, RoutedEventArgs e)
         {
-            agent.Tell(LoremIpsum(2, 5), LoremIpsum(4, 15), GetOptionsList(), _ => { });
+            ShowBalloon(LoremIpsum(2, 5), LoremIpsum(4, 15), GetOptionsList(), "OK");
         }
 
         private void SpeakYesNo(object sender, RoutedEventArgs e)
         {
-            agent.AskYesNo(LoremIpsum(2, 5), LoremIpsum(4, 15), GetOptionsList(), _ => { });
+            ShowBalloon(LoremIpsum(2, 5), LoremIpsum(4, 15), GetOptionsList(), "Yes", "No");
         }
 
         private void SpeakOkCancel(object sender, RoutedEventArgs e)
         {
-            agent.AskOkCancel(LoremIpsum(2, 5), LoremIpsum(4, 25), GetOptionsList(), _ => { });
+            ShowBalloon(LoremIpsum(2, 5), LoremIpsum(4, 15), GetOptionsList(), "OK", "Cancel");
         }
 
         private void SpeakThreeButtons(object sender, RoutedEventArgs e)
         {
-            agent.Ask(LoremIpsum(2, 5), LoremIpsum(4, 25), new[] { "Yes", "Maybe, maybe not", "No" }, GetOptionsList(), _ => { });
+            ShowBalloon(LoremIpsum(2, 5), LoremIpsum(4, 25), GetOptionsList(), "Yes", "Maybe", "maybe not", "No");
         }
 
         private void Think(object sender, RoutedEventArgs e)
@@ -113,7 +125,7 @@ namespace TestHarness
 
         private void HideBalloon(object sender, RoutedEventArgs e)
         {
-            agent.HideBalloon();
+            lifetimes.TerminateCurrent();
         }
 
         // I love StackOverflow - http://stackoverflow.com/questions/4286487/is-there-any-lorem-ipsum-generator-in-c
