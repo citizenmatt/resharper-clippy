@@ -112,13 +112,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         private void ShowRefactoringAdvice(IHighlighter highlighter, InplaceRefactoringInfo refactoringInfo)
         {
-            // Holy lifetimes, batman!
-            // We have a sequential lifetime that makes it easy to cancel our balloon at
-            // any time, by calling sequentialLifetimes.TerminateCurrent, and calling Next
-            // will ensure that the previous balloon is terminated.
-            // Then we tell the agent to show, which gives us a lifetime for the balloon,
-            // which is terminated when the balloon is hidden (or a new one is shown)
-            sequentialLifetimes.DefineNext((d, refactoringLifetime) =>
+            sequentialLifetimes.Next(refactoringLifetime =>
             {
                 var message = GetMessage();
                 var options = GetOptions(refactoringInfo);
@@ -140,26 +134,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                             if (action != null)
                                 action();
                         });
-
-                        // Create a new lifetime that is terminated when either lifetime
-                        // terminates, and unhooks itself from both when either terminates
-                        // Technically, I think this is a race condition, since we could
-                        // hide the balloon when the balloon lifetime ends, which causes
-                        // the replacement balloon lifetime to terminate. I think we get
-                        // away with this because the balloon runs with a SequentialLifetime
-                        // and that gets set to the EternalLifetime when its being terminated.
-                        // I think it might be nicer to give each balloon their own lifetime
-                        // and get rid of HideBalloon completely
-                        Lifetimes.CreateIntersection2(refactoringLifetime, balloonLifetime).Lifetime.AddAction(() =>
-                        {
-                            d.Terminate();
-                            currentHighlighter = null;
-                        });
                     });
             });
         }
 
-        private string GetMessage()
+        private static string GetMessage()
         {
             return "It looks like you're refactoring code." + Environment.NewLine + Environment.NewLine +
                    "Would you like help?";

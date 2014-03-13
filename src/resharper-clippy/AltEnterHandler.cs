@@ -16,15 +16,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     {
         private readonly Lifetime lifetime;
         private readonly Agent agent;
-        private readonly IShellLocks locks;
         private readonly BulbKeysBuilder bulbKeysBuilder;
         private bool setPosition = true;
 
-        public AltEnterHandler(Lifetime lifetime, Agent agent, IShellLocks locks)
+        public AltEnterHandler(Lifetime lifetime, Agent agent)
         {
             this.lifetime = lifetime;
             this.agent = agent;
-            this.locks = locks;
             bulbKeysBuilder = new BulbKeysBuilder();
         }
 
