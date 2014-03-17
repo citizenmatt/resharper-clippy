@@ -55,7 +55,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         }
 
         public void ShowBalloon(Lifetime clientLifetime, string header, string message,
-            IList<BalloonOption> options, IEnumerable<string> buttons, Action<Lifetime> init)
+            IList<BalloonOption> options, IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
             if (!Character.Visible)
                 Show();
@@ -68,7 +68,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
                 init(balloonLifetime);
 
-                balloon.Show(Character.Left, Character.Top, Character.Width, Character.Height);
+                balloon.Show(Character.Left, Character.Top, Character.Width, Character.Height, activate);
             });
         }
 

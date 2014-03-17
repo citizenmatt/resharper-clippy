@@ -66,9 +66,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         }
 
         public void ShowBalloon(Lifetime lifetime, string header, string message, IList<BalloonOption> options,
-            IEnumerable<string> buttons, Action<Lifetime> init)
+            IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
-            Do(c => c.ShowBalloon(lifetime, header, message, options, buttons, init));
+            Do(c => c.ShowBalloon(lifetime, header, message, options, buttons, activate, init));
         }
 
         public ISimpleSignal AgentClicked { get; private set; }

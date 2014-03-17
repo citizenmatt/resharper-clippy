@@ -19,7 +19,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
                 ShowInTaskbar = false,
                 Topmost = true,
                 AllowsTransparency = true,
-                Background = Brushes.Transparent
+                Background = Brushes.Transparent,
+                ShowActivated = false
             };
             var grid = new Grid();
             grid.AddChild(new Border

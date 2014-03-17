@@ -8,6 +8,7 @@
             <CheckBox x:Name="ShowOptionsListCheckBox" Margin="10,10,0,0">Show options list</CheckBox>
             <TextBox x:Name="NumberOfOptions" Margin="10,0,0,0" Width="25" VerticalAlignment="Bottom">8</TextBox>
             <CheckBox x:Name="ShowSearchCheckBox" Margin="10,10,0,0">Show search text box</CheckBox>
+            <CheckBox x:Name="ShowActivated" Margin="10,10,0,0">Show activated</CheckBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Button Content="Say" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="Speak"/>

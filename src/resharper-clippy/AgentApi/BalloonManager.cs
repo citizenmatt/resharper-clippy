@@ -54,9 +54,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             balloonLifetimes.TerminateCurrent();
         }
 
-        public void Show(short left, short top, short width, short height)
+        public void Show(short left, short top, short width, short height, bool activate)
         {
-            balloonWindow.Show(left, top, width, height);
+            balloonWindow.Show(left, top, width, height, activate);
         }
 
         public void UpdateTargetPosition(short x, short y)

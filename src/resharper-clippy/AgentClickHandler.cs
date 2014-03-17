@@ -46,7 +46,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 var lifetimeDefinition = Lifetimes.Define(lifetime);
                 agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
                     "(Note: Need to make list smarter based on solution open/closed, etc)",
-                    options, buttons,
+                    options, buttons, true,
                     balloonLifetime =>
                     {
                         agent.BalloonOptionClicked.Advise(balloonLifetime, tag =>

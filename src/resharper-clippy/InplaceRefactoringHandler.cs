@@ -116,7 +116,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             {
                 var message = GetMessage();
                 var options = GetOptions(refactoringInfo);
-                agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, new[] { "Cancel" },
+                agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, new[] { "Cancel" }, false,
                     balloonLifetime =>
                     {
                         currentHighlighter = highlighter;
@@ -150,13 +150,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             switch (refactoringInfo.Type)
             {
                 case InplaceRefactoringType.Rename:
-                    applyRefactoringMessage = "Apply rename refactoring";
+                    applyRefactoringMessage = "Apply rename refactoring (Alt+Enter)";
                     break;
                 case InplaceRefactoringType.ChangeSignature:
-                    applyRefactoringMessage = "Apply change signature refactoring";
+                    applyRefactoringMessage = "Apply change signature refactoring (Alt+Enter)";
                     break;
                 case InplaceRefactoringType.MoveStaticMembers:
-                    applyRefactoringMessage = "Apply move static members refactoring";
+                    applyRefactoringMessage = "Apply move static members refactoring (Alt+Enter)";
                     break;
             }
 

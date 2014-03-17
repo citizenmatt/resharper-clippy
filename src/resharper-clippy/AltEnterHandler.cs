@@ -98,7 +98,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
                 "(Note: no support for submenus or keyboard yet)",
-                options, buttons, init);
+                options, buttons, true, init);
 
             return true;
         }

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using JetBrains.Util;
 using JetBrains.Util.Interop;
@@ -46,7 +47,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
         public BalloonWindow()
         {
             InitializeComponent();
-
 
             LayoutUpdated += OnLayoutUpdated;
             IsVisibleChanged += OnVisibleChanged;
@@ -235,9 +235,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
         }
 
 
-        public void Show(short x, short y, short w, short h)
+        public void Show(short x, short y, short w, short h, bool activate)
         {
             SetTargetBounds(x, y, w, h);
+
+            ShowActivated = activate;
 
             Show();
         }

@@ -90,7 +90,11 @@ namespace TestHarness
 
         private void ShowBalloon(string header, string message, IList<BalloonOption> options, params string[] buttons)
         {
-            lifetimes.Next(lifetime => agent.ShowBalloon(lifetime, header, message, options, buttons, _ => { }));
+            lifetimes.Next(lifetime =>
+            {
+                var activate = ShowActivated.IsChecked.HasValue && ShowActivated.IsChecked.Value;
+                agent.ShowBalloon(lifetime, header, message, options, buttons, activate, _ => { });
+            });
         }
 
         private void Speak(object sender, RoutedEventArgs e)
