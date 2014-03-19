@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DoubleAgent.Control;
 using JetBrains.DataFlow;
+using JetBrains.Interop.WinApi;
+using JetBrains.Interop.WinApi.Wrappers;
 using JetBrains.Util.Interop;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
@@ -32,21 +35,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 (short)(Character.OriginalHeight * DpiUtil.DpiVerticalFactor));
         }
 
-        private void ForceBalloonHide()
-        {
-            balloon.ForceHide();
-        }
-
         public void Hide()
         {
             Character.Hide();
-            ForceBalloonHide();
+            balloon.ForceHide();
         }
 
         public void MoveTo(short x, short y)
         {
             Character.MoveTo(x, y);
-            balloon.UpdateTargetPosition(x, y);
+            balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
         }
 
         public void Show()
@@ -68,7 +66,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
                 init(balloonLifetime);
 
-                balloon.Show(Character.Left, Character.Top, Character.Width, Character.Height, activate);
+                // TODO: Yuck. Is this the best idea?
+                var owner = new Win32Window(WindowFromPoint(new POINT(Character.Left, Character.Top)));
+                balloon.Show(owner, Character.Left, Character.Top, Character.Width, Character.Height, activate);
             });
         }
 
@@ -99,7 +99,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void ICharacterEvents.OnMove(short x, short y, MoveCauseType cause)
         {
-            balloon.UpdateTargetPosition(x, y);
+            balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
         }
 
         void ICharacterEvents.OnClick(short button, bool shiftKey, short x, short y)
@@ -127,11 +127,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void ICharacterEvents.OnHide(VisibilityCauseType cause)
         {
-            ForceBalloonHide();
+            balloon.ForceHide();
         }
 
         void ICharacterEvents.OnShow(VisibilityCauseType cause)
         {
         }
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr WindowFromPoint(POINT point);
     }
 }

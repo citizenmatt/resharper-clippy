@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon;
 using JetBrains.DataFlow;
 
@@ -9,6 +10,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     {
         private readonly SequentialLifetimes balloonLifetimes;
         private BalloonWindow balloonWindow;
+        private BalloonWindowHost host;
 
         public BalloonManager(Lifetime overallLifetime)
         {
@@ -25,6 +27,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 balloonWindow.ButtonClicked += OnButtonClicked;
                 balloonWindow.OptionClicked += OnBalloonOptionClicked;
 
+                host = new BalloonWindowHost(balloonWindow);
+
                 // If the client wants to hide the balloon, they can terminate clientLifetime
                 // If another client calls CreateNew, balloonLifetimes.Next terminates
                 // balloonLifetime. Whichever lifetime terminates first will cause
@@ -32,9 +36,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 var combinedLifetime = Lifetimes.CreateIntersection2(clientLifetime, balloonLifetime).Lifetime;
                 combinedLifetime.AddAction(() =>
                 {
-                    if (balloonWindow != null)
+                    if (host != null)
                     {
-                        balloonWindow.Close();
+                        host.Close();
+                        host = null;
                         balloonWindow = null;
                     }
                 });
@@ -54,15 +59,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             balloonLifetimes.TerminateCurrent();
         }
 
-        public void Show(short left, short top, short width, short height, bool activate)
+        public void Show(IWin32Window owner, short left, short top, short width, short height, bool activate)
         {
-            balloonWindow.Show(left, top, width, height, activate);
+            UpdateAnchorPoint(left, top, width, height);
+            host.Show(owner, activate);
         }
 
-        public void UpdateTargetPosition(short x, short y)
+        public void UpdateAnchorPoint(short left, short top, short width, short height)
         {
-            if (balloonWindow != null)
-                balloonWindow.UpdateTargetPosition(x, y);
+            if (host != null)
+                host.SetAnchorBounds(left, top, width, height);
         }
 
         public void SetText(string header, string message)

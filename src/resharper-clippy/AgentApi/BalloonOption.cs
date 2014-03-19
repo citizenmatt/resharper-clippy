@@ -4,7 +4,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
     public class BalloonOption
     {
-        public static object Null = new object();
+        public static readonly object Null = new object();
 
         public string Text { get; private set; }
         public object Tag { get; private set; }
@@ -13,7 +13,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         public BalloonOption(string text)
             : this(text, false, Null)
         {
-            
         }
 
         public BalloonOption(string text, object tag)

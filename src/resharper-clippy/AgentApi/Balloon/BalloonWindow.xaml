@@ -1,26 +1,20 @@
-﻿<Window x:Class="CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon.BalloonWindow"
+﻿<UserControl x:Class="CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon.BalloonWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:balloon="clr-namespace:CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon"
         mc:Ignorable="d"
-        SizeToContent="WidthAndHeight"
-        WindowStyle="None"
-        ShowInTaskbar="False"
-        Topmost="True"
         OverridesDefaultStyle="False"
-        AllowsTransparency="True"
-        ResizeMode="NoResize"
         Width="Auto" Height="Auto"
         MinWidth="120" MinHeight="40"
         MaxWidth="350" MaxHeight="700"
-        Background="Transparent"
+        Background="#FFFFCD"
         FontFamily="Tahoma"
         FontSize="10pt"
         d:DataContext="{d:DesignInstance balloon:BalloonWindow}">
     
-    <Window.CommandBindings>
+    <UserControl.CommandBindings>
         <CommandBinding Command="{x:Static balloon:Commands.SeeNextCommand}"
                         CanExecute="OnCanExecuteShowNextCommand"
                         Executed="ExecutedShowNextCommand"/>
@@ -31,9 +25,9 @@
                         Executed="ExecutedOptionCommand"/>
         <CommandBinding Command="{x:Static balloon:Commands.ButtonCommand}"
                         Executed="ExecutedButtonCommand"/>
-    </Window.CommandBindings>
+    </UserControl.CommandBindings>
     
-    <Window.Resources>
+    <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="DefaultStyles.xaml" />
@@ -43,7 +37,7 @@
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>
+    </UserControl.Resources>
 
     <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="1">
         <DockPanel.Resources>
@@ -150,70 +144,64 @@
             </Style>
         </DockPanel.Resources>
 
-        <balloon:BalloonDecorator x:Name="Balloon"
-                                  Background="#FFFFCD"
-                                  PointerLength="15"
-                                  CornerRadius="7"
-                                  BorderBrush="Black"
-                                  PointerPosition="Bottom">
-            <DockPanel>
-                <StackPanel DockPanel.Dock="Top"
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top"
                             Orientation="Vertical"
                             Margin="7,7,7,7">
 
-                    <!-- Text - header + message -->
-                    <TextBlock Text="{Binding Header, Mode=OneWay}" FontWeight="Bold" TextWrapping="WrapWithOverflow" />
-                    <TextBlock Margin="0,7,0,0"
+                <!-- Text - header + message -->
+                <TextBlock Text="{Binding Header, Mode=OneWay}" FontWeight="Bold" TextWrapping="WrapWithOverflow" />
+                <TextBlock Margin="0,7,0,0"
                            Text="{Binding Message, Mode=OneTime}"
                            TextWrapping="WrapWithOverflow" />
 
-                    <!-- Options list -->
-                    <StackPanel Margin="0,7,0,0">
-                        <!-- TODO: Proper button styles -->
-                        <Button x:Name="SeePreviousButton"
+                <!-- Options list -->
+                <StackPanel Margin="0,7,0,0">
+                    <!-- TODO: Proper button styles -->
+                    <Button x:Name="SeePreviousButton"
                             Visibility="{Binding ElementName=SeePreviousButton, Path=IsEnabled, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Command="{x:Static balloon:Commands.SeePreviousCommand}">See previous...</Button>
 
-                        <ItemsControl ItemsSource="{Binding OptionsPage}" IsTabStop="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <Separator Margin="20,3,10,0" Background="#C9C9C2" SnapsToDevicePixels="True">
-                                            <Separator.Style>
-                                                <Style TargetType="Separator">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Value.RequiresSeparator, Mode=OneWay}" Value="False">
-                                                            <Setter Property="Visibility" Value="Collapsed" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Separator.Style>
-                                        </Separator>
-                                        <Button Style="{StaticResource OptionsButtonStyle}"
+                    <ItemsControl ItemsSource="{Binding OptionsPage}" IsTabStop="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Separator Margin="20,3,10,0" Background="#C9C9C2" SnapsToDevicePixels="True">
+                                        <Separator.Style>
+                                            <Style TargetType="Separator">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Value.RequiresSeparator, Mode=OneWay}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Separator.Style>
+                                    </Separator>
+                                    <Button Style="{StaticResource OptionsButtonStyle}"
                                             Command="{x:Static balloon:Commands.OptionCommand}"
                                             CommandParameter="{Binding Index, Mode=OneTime}">
-                                            <TextBlock Text="{Binding Value.Text, Mode=OneTime}" TextWrapping="Wrap" />
-                                        </Button>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                        <TextBlock Text="{Binding Value.Text, Mode=OneTime}" TextWrapping="Wrap" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                        <!-- TODO: Proper style -->
-                        <Button x:Name="SeeNextButton"
+                    <!-- TODO: Proper style -->
+                    <Button x:Name="SeeNextButton"
                             Margin="0,7,0,0"
                             Visibility="{Binding ElementName=SeeNextButton, Path=IsEnabled, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Command="{x:Static balloon:Commands.SeeNextCommand}">See more...</Button>
-                    </StackPanel>
                 </StackPanel>
+            </StackPanel>
 
-                <StackPanel DockPanel.Dock="Bottom"
+            <StackPanel DockPanel.Dock="Bottom"
                             Orientation="Vertical"
                             VerticalAlignment="Bottom"
                             Margin="7,0,7,7">
 
-                    <!-- Search text box -->
-                    <TextBox Margin="0,9,0,0"
+                <!-- Search text box -->
+                <TextBox Margin="0,9,0,0"
                              BorderThickness="1"
                              BorderBrush="#C3C4B6"
                              GotFocus="OnSearchTextBoxGetFocus"
@@ -221,38 +209,37 @@
                              Text="Type your question here, and then click Search"
                              TextWrapping="Wrap" />
 
-                    <Separator Margin="0,7,0,7" Background="#C9C9C2">
-                        <Separator.Style>
-                            <Style TargetType="Separator">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasButtons, Mode=OneWay}" Value="False">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Separator.Style>
-                    </Separator>
+                <Separator Margin="0,7,0,7" Background="#C9C9C2">
+                    <Separator.Style>
+                        <Style TargetType="Separator">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasButtons, Mode=OneWay}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Separator.Style>
+                </Separator>
 
-                    <!-- Buttons -->
-                    <ItemsControl ItemsSource="{Binding Buttons, Mode=OneWay}"
+                <!-- Buttons -->
+                <ItemsControl ItemsSource="{Binding Buttons, Mode=OneWay}"
                               IsTabStop="False">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <balloon:JustifiedUniformGrid Rows="1" HorizontalAlignment="Stretch" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button Command="{x:Static balloon:Commands.ButtonCommand}"
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <balloon:JustifiedUniformGrid Rows="1" HorizontalAlignment="Stretch" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Command="{x:Static balloon:Commands.ButtonCommand}"
                                     CommandParameter="{Binding Mode=OneTime}"
                                     HorizontalAlignment="Center"
                                     Content="{Binding Value, Mode=OneTime}"
                                     MinWidth="50" Padding="7,2,7,2" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </DockPanel>
-        </balloon:BalloonDecorator>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </DockPanel>
     </DockPanel>
-</Window>
+</UserControl>
