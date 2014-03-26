@@ -80,7 +80,8 @@ namespace TestHarness
                 {
                     var text = LoremIpsum(3, 10);
                     var tag = text; // In real life, something useful
-                    options.Add(new BalloonOption(text, false, tag));
+                    var enabled = i != 3;
+                    options.Add(new BalloonOption(text, false, enabled, tag));
                 }
                 return options;
             }

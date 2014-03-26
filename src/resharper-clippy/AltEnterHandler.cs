@@ -7,6 +7,7 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Intentions.Bulbs;
 using JetBrains.UI.BulbMenu;
+using JetBrains.UI.Resources;
 using DataConstants = JetBrains.TextControl.DataContext.DataConstants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
@@ -48,34 +49,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 setPosition = false;
             }
 
-            var bulbItems = context.GetComponent<BulbItems>();
-            if (bulbItems.BulbItemsState.Value == null)
+            var bulbActionKeys = GetBulbActionKeys(context);
+            if (bulbActionKeys == null)
                 return false;
-
-            var bulbItemsState = bulbItems.BulbItemsState.Value;
-            if (bulbItemsState.BulbItemsStates == BulbItemsStates.Invalidated)
-                return false;
-
-            if (bulbItemsState.IntentionsBulbItems == null || !bulbItemsState.IntentionsBulbItems.AllBulbMenuItems.Any())
-                return false;
-
-            var bulbActionKeys = bulbKeysBuilder.BuildMenuKeys(bulbItemsState.IntentionsBulbItems.AllBulbMenuItems);
 
             // TODO: Keyboard shortcut indicators?
             var options = new List<BalloonOption>();
-            IAnchor groupingAnchor = null;
-            foreach (var key in bulbActionKeys)
-            {
-                if (groupingAnchor == null)
-                    groupingAnchor = key.GroupingAnchor;
-
-                if (key.RichText == null)
-                    continue;
-
-                var requiresSeparator = !Equals(key.GroupingAnchor, groupingAnchor);
-                groupingAnchor = key.GroupingAnchor;
-                options.Add(new BalloonOption(key.RichText.ToString(), requiresSeparator, key));
-            }
+            PopulateBalloonOptions(options, bulbActionKeys);
 
             var buttons = new List<string> {"Cancel"};
 
@@ -104,5 +84,43 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         }
 
         public double Priority { get { return 0; } }
+
+        private IEnumerable<BulbActionKey> GetBulbActionKeys(IDataContext context)
+        {
+            var bulbItems = context.GetComponent<BulbItems>();
+            if (bulbItems.BulbItemsState.Value == null)
+                return null;
+
+            var bulbItemsState = bulbItems.BulbItemsState.Value;
+            if (bulbItemsState.BulbItemsStates == BulbItemsStates.Invalidated)
+                return null;
+
+            if (bulbItemsState.IntentionsBulbItems == null || !bulbItemsState.IntentionsBulbItems.AllBulbMenuItems.Any())
+                return null;
+
+            var bulbActionKeys = bulbKeysBuilder.BuildMenuKeys(bulbItemsState.IntentionsBulbItems.AllBulbMenuItems);
+            return bulbActionKeys;
+        }
+
+        private void PopulateBalloonOptions(IList<BalloonOption> options, IEnumerable<BulbActionKey> bulbActions)
+        {
+            IAnchor groupingAnchor = null;
+            foreach (var bulbAction in bulbActions)
+            {
+                if (groupingAnchor == null)
+                    groupingAnchor = bulbAction.GroupingAnchor;
+
+                if (bulbAction.RichText == null)
+                    continue;
+
+                var enabled = bulbAction.Executable != null;
+
+                var requiresSeparator = !Equals(bulbAction.GroupingAnchor, groupingAnchor);
+                groupingAnchor = bulbAction.GroupingAnchor;
+                options.Add(new BalloonOption(bulbAction.RichText.ToString(), requiresSeparator, enabled, bulbAction));
+
+                PopulateBalloonOptions(options, bulbAction.Subitems);
+            }
+        }
     }
 }
