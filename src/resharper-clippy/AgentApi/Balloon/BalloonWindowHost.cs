@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using JetBrains.Interop.WinApi;
+using Key = System.Windows.Input.Key;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 
@@ -55,11 +56,21 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
                 Margin = Margin,
                 MinimumSize = new Size(50, 10)
             };
+            balloonWindow.KeyUp += balloonWindow_KeyUp;
             Controls.Add(host);
 
             ResumeLayout();
         }
         // ReSharper restore DoNotCallOverridableMethodsInConstructor
+
+        void balloonWindow_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Close();
+                e.Handled = true;
+            }
+        }
 
         public void Show(IWin32Window owner, bool showActivated)
         {
