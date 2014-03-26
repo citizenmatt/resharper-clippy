@@ -7,7 +7,6 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Intentions.Bulbs;
 using JetBrains.UI.BulbMenu;
-using JetBrains.UI.Resources;
 using DataConstants = JetBrains.TextControl.DataContext.DataConstants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
@@ -32,8 +31,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             return true;
         }
 
-        // TODO: Take keyboard focus. Handle escape + keyboard
-        // TODO: Sub menus. Indicator for submenus?
         public bool HandleAction(IDataContext context)
         {
             // TODO: Positioning should be in a common place
@@ -53,7 +50,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             if (bulbActionKeys == null)
                 return false;
 
-            // TODO: Keyboard shortcut indicators?
             var options = new List<BalloonOption>();
             PopulateBalloonOptions(options, bulbActionKeys);
 
@@ -76,8 +72,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());
             };
 
-            agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
-                "(Note: no support for submenus or keyboard yet)",
+            agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?", string.Empty,
                 options, buttons, true, init);
 
             return true;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
 using JetBrains.Application;
@@ -12,38 +13,29 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     public class AgentClickHandler
     {
         private readonly IActionManager actionManager;
+        private readonly IShortcutManager shortcutManager;
         private readonly IThreading threading;
 
-        public AgentClickHandler(Lifetime lifetime, Agent agent, IActionManager actionManager, IThreading threading)
+        public AgentClickHandler(Lifetime lifetime, Agent agent,
+            IActionManager actionManager, IShortcutManager shortcutManager, IThreading threading)
         {
             this.actionManager = actionManager;
+            this.shortcutManager = shortcutManager;
             this.threading = threading;
 
             var buttons = new List<string>
             {
                 "Options",
-                "Ok"
-            };
-
-            // TODO: Different options depending on what's selected
-            // E.g. Solution/no solution, editor visible, solution explorer
-            // Get DataContext from ambient selection
-            var options = new List<BalloonOption>
-            {
-                new BalloonOption("Refactor this", "RefactorThis"),
-                new BalloonOption("Navigate from here", "NavigateTo"),
-                new BalloonOption("Inspect this", "InspectThis"),
-                new BalloonOption("Generate code", "Generate"),
-                new BalloonOption("Create new file", "GenerateFileBesides"),
-                new BalloonOption("Find usages", "FindUsages"),
-                new BalloonOption("Go to symbol", "GotoSymbol"),
-                new BalloonOption("Clean code", "CleanupCode"),
+                "Done"
             };
 
             // ReSharper disable ConvertToLambdaExpression
             agent.AgentClicked.Advise(lifetime, _ =>
             {
                 var lifetimeDefinition = Lifetimes.Define(lifetime);
+
+                var options = GetOptions();
+
                 agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
                     "(Note: Need to make list smarter based on solution open/closed, etc)",
                     options, buttons, true,
@@ -52,12 +44,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                         agent.BalloonOptionClicked.Advise(balloonLifetime, tag =>
                         {
                             lifetimeDefinition.Terminate();
-                            var action = tag as Action;
-                            if (action != null)
-                                action();
-                            var actionId = tag as string;
-                            if (actionId != null)
-                                ExecuteAction(actionId);
+                            ExecuteOption(tag);
                         });
 
                         agent.ButtonClicked.Advise(balloonLifetime, button =>
@@ -71,14 +58,70 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             // ReSharper restore ConvertToLambdaExpression
         }
 
+        private List<BalloonOption> GetOptions()
+        {
+            // TODO: Different options depending on what's selected
+            // E.g. Solution/no solution, editor visible, solution explorer
+            var options = new List<BalloonOption>();
+            threading.ReentrancyGuard.Execute("Agent::PopulateActions", () =>
+            {
+                AddAction(options, "RefactorThis");
+                AddAction(options, "NavigateTo");
+                AddAction(options, "InspectThis");
+                AddAction(options, "Generate");
+                AddAction(options, "GenerateFileBesides");
+                AddAction(options, "FindUsages");
+                AddAction(options, "GotoSymbol");
+                AddAction(options, "CleanupCode");
+            });
+            return options;
+        }
+
+        private void AddAction(ICollection<BalloonOption> options, string actionId)
+        {
+            var action = actionManager.GetExecutableAction(actionId);
+            if (action == null || !actionManager.UpdateAction(action))
+                return;
+
+            var shortcutText = string.Empty;
+
+            var shortcuts = shortcutManager.GetShortcutsWithScopes(action);
+            if (shortcuts.Any())
+            {
+                var keyboardShortcuts = shortcuts[0].First.KeyboardShortcuts;
+                if (keyboardShortcuts.Any())
+                    shortcutText = string.Format(" ({0})", keyboardShortcuts[0]);
+            }
+
+            options.Add(new BalloonOption(action.Presentation.Text + shortcutText, action));
+        }
+
+        private void ExecuteOption(object tag)
+        {
+            var action = tag as Action;
+            if (action != null)
+                action();
+
+            var executableAction = tag as IExecutableAction;
+            if (executableAction != null)
+                ExecuteAction(executableAction);
+
+            var actionId = tag as string;
+            if (actionId != null)
+                ExecuteAction(actionId);
+        }
+
         private void ExecuteAction(string actionId)
         {
             var action = actionManager.GetExecutableAction(actionId);
             if (action != null)
-            {
-                threading.ReentrancyGuard.ExecuteOrQueue(EternalLifetime.Instance, "AgentAction",
-                    () => actionManager.ExecuteActionIfAvailable(action));
-            }
+                ExecuteAction(action);
+        }
+
+        private void ExecuteAction(IExecutableAction action)
+        {
+            threading.ReentrancyGuard.ExecuteOrQueue(EternalLifetime.Instance, "AgentAction",
+                () => actionManager.ExecuteActionIfAvailable(action));
         }
     }
 }
