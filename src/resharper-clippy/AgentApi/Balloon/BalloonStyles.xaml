@@ -82,7 +82,7 @@
                     <BulletDecorator Background="Transparent" 
                                      Cursor="Hand"
                                      VerticalAlignment="Center"
-                                     Margin="5,7,0,2">
+                                     Margin="5,5,0,5">
                         <BulletDecorator.Bullet>
                             <Viewbox x:Name="BulletRoot" Width="10">
                                 <Canvas Width="128" Height="128">
