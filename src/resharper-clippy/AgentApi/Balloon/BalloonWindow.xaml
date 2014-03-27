@@ -181,8 +181,9 @@
                                     <Button Style="{StaticResource OptionsButtonStyle}"
                                             Command="{x:Static balloon:Commands.OptionCommand}"
                                             CommandParameter="{Binding Index, Mode=OneTime}"
-                                            IsEnabled="{Binding Value.Enabled, Mode=OneTime}"
-                                            Content="{Binding Value.Text}"/>
+                                            IsEnabled="{Binding Value.Enabled, Mode=OneTime}">
+                                        <AccessText TextWrapping="Wrap" Text="{Binding Value.Text, Mode=OneTime}" />
+                                    </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
