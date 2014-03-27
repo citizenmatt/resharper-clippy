@@ -172,7 +172,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 
         private void UpdateLocation()
         {
-            var screen = Screen.FromControl(this);
+            var screen = Screen.FromRectangle(anchorBounds);
 
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
