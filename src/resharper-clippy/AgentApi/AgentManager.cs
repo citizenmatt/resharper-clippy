@@ -14,6 +14,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         private readonly Lifetime lifetime;
         private readonly FileSystemPath agentLocation;
         private readonly IDictionary<string, ICharacterEvents> events;
+        private readonly IDictionary<int, ICharacterEvents> requests;
         private Control agentControl;
 
         public AgentManager(Lifetime lifetime)
@@ -21,6 +22,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             this.lifetime = lifetime;
             agentLocation = FileSystemPath.Parse(GetType().Assembly.Location).Directory;
             events = new Dictionary<string, ICharacterEvents>();
+            requests = new Dictionary<int, ICharacterEvents>();
         }
 
         public void Initialise()
@@ -90,14 +92,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void agentControl_RequestStart(Request request)
         {
-            foreach (var agent in events.Values)
+            ICharacterEvents agent;
+            if(requests.TryGetValue(request.ID, out agent))
                 agent.OnRequestStart(request);
         }
 
         void agentControl_RequestComplete(Request request)
         {
-            foreach (var agent in events.Values)
+            ICharacterEvents agent;
+            if (requests.TryGetValue(request.ID, out agent))
+            {
                 agent.OnRequestComplete(request);
+                requests.Remove(request.ID);
+            }
         }
 
         void agentControl_Show(string characterId, VisibilityCauseType cause)
@@ -118,7 +125,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
             agentControl.Characters.Load(characterName, characterName + ".acs");
             var character = agentControl.Characters.Character(characterName);
-            var agent = new AgentCharacter(lifetime, character);
+            var agent = new AgentCharacter(lifetime, character, this);
             events.Add(characterName, agent);
             return agent;
         }
@@ -128,6 +135,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             var characterId = agent.Character.CharacterID;
             events.Remove(characterId);
             agentControl.Characters.Unload(characterId);
+        }
+
+        public void RegisterRequest(Request request, AgentCharacter agentCharacter)
+        {
+            requests.Add(request.ID, agentCharacter);
         }
     }
 }

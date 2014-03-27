@@ -11,10 +11,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
     public class AgentCharacter : ICharacterEvents
     {
+        private readonly AgentManager agentManager;
         private readonly BalloonManager balloon;
 
-        public AgentCharacter(Lifetime lifetime, Character character)
+        public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager)
         {
+            this.agentManager = agentManager;
             Character = character;
             ScaleCharacterForDpi();
 
@@ -29,6 +31,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public Character Character { get; private set; }
 
+        private void RegisterRequest(Request request)
+        {
+            agentManager.RegisterRequest(request, this);
+        }
+
         private void ScaleCharacterForDpi()
         {
             Character.SetSize((short)(Character.OriginalWidth * DpiUtil.DpiHorizontalFactor),
@@ -37,19 +44,36 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Hide()
         {
-            Character.Hide();
+            RegisterRequest(Character.Hide());
             balloon.ForceHide();
         }
 
         public void MoveTo(short x, short y)
         {
-            Character.MoveTo(x, y);
+            RegisterRequest(Character.MoveTo(x, y));
             balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
         }
 
         public void Show()
         {
-            Character.Show();
+            RegisterRequest(Character.Show());
+        }
+
+        public void Play(string animation)
+        {
+            var request = Character.Play(animation);
+            RegisterRequest(request);
+        }
+
+        public void Play(Lifetime lifetime, string animation)
+        {
+            var request = Character.Play(animation);
+            RegisterRequest(request);
+            lifetime.AddAction(() =>
+            {
+                if (request.Status == RequestStates.InProgress)
+                    Character.Play("Idle1_1");
+            });
         }
 
         public void ShowBalloon(Lifetime clientLifetime, string header, string message,

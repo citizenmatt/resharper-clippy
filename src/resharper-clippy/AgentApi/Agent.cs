@@ -31,6 +31,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             BalloonOptionClicked = new Signal<object>(lifetime, "Agent::BalloonOptionClicked");
         }
 
+        public AgentCharacter AgentCharacter
+        {
+            get { return character.Value; }
+        }
+
         private void Do(Action<AgentCharacter> action)
         {
             var c = character.Value;
@@ -63,6 +68,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         {
             // TODO: Look at request? Fire signal when it's finished?
             Do(c => c.Hide());
+        }
+
+        public void Play(string animation)
+        {
+            Do(c => c.Play(animation));
+        }
+
+        public void Play(Lifetime lifetime, string animation)
+        {
+            Do(c => c.Play(lifetime, animation));
         }
 
         public void ShowBalloon(Lifetime lifetime, string header, string message, IList<BalloonOption> options,

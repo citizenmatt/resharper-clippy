@@ -39,6 +39,7 @@
     <StartProgram>$(VsInstallDir)devenv.exe</StartProgram>
     <StartArguments>/ReSharper.Plugin $(AssemblyName).dll /ReSharper.Internal</StartArguments>
     <StartWorkingDirectory>$(MSBuildProjectDirectory)\$(OutputPath)</StartWorkingDirectory>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
@@ -77,6 +78,7 @@
     <Compile Include="AgentApi\Balloon\Indexed.cs" />
     <Compile Include="AgentApi\Balloon\JustifiedUniformGrid.cs" />
     <Compile Include="AgentApi\IUntypedSignalEx.cs" />
+    <Compile Include="AgentApi\RequestStates.cs" />
     <Compile Include="AgentClickHandler.cs" />
     <Compile Include="AltEnterHandler.cs" />
     <Compile Include="AgentApi\ICharacterEvents.cs" />

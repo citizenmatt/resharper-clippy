@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.DataFlow;
@@ -37,6 +38,11 @@ namespace TestHarness
                 tag => MessageBox.ShowExclamation(string.Format("Clicked: {0}", tag)));
             agent.ButtonClicked.Advise(lifetime,
                 button => MessageBox.ShowExclamation(string.Format("Clicked button: {0}", button)));
+
+            var character = agent.AgentCharacter.Character;
+            Animations.ItemsSource = character.Animations.OrderBy();
+            Animations.SelectedIndex = 0;
+
             firstTime = true;
         }
 
@@ -158,6 +164,15 @@ namespace TestHarness
             }
 
             return result;
+        }
+
+        private void Animate(object sender, RoutedEventArgs e)
+        {
+            var animation = Animations.SelectedItem as string;
+            if (string.IsNullOrEmpty(animation))
+                return;
+
+            agent.Play(animation);
         }
     }
 }
