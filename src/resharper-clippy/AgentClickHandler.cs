@@ -93,7 +93,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                     shortcutText = string.Format(" ({0})", keyboardShortcuts[0]);
             }
 
-            options.Add(new BalloonOption(action.Presentation.Text + shortcutText, action));
+            options.Add(new BalloonOption(action.Presentation.Text.Replace("&", "_") + shortcutText, action));
         }
 
         private void ExecuteOption(object tag)

@@ -150,8 +150,9 @@
                             Margin="7,7,7,7">
 
                 <!-- Text - header + message -->
-                <TextBlock Text="{Binding Header, Mode=OneWay}" FontWeight="Bold" TextWrapping="WrapWithOverflow" />
-                <TextBlock Margin="0,7,0,0"
+                <TextBlock Style="{StaticResource CollasingTextBlockStyle}" Text="{Binding Header, Mode=OneWay}" FontWeight="Bold" TextWrapping="WrapWithOverflow" />
+                <TextBlock Style="{StaticResource CollasingTextBlockStyle}"
+                           Margin="0,7,0,0"
                            Text="{Binding Message, Mode=OneTime}"
                            TextWrapping="WrapWithOverflow" />
 
@@ -180,9 +181,8 @@
                                     <Button Style="{StaticResource OptionsButtonStyle}"
                                             Command="{x:Static balloon:Commands.OptionCommand}"
                                             CommandParameter="{Binding Index, Mode=OneTime}"
-                                            IsEnabled="{Binding Value.Enabled, Mode=OneTime}">
-                                        <TextBlock Text="{Binding Value.Text, Mode=OneTime}" TextWrapping="Wrap" />
-                                    </Button>
+                                            IsEnabled="{Binding Value.Enabled, Mode=OneTime}"
+                                            Content="{Binding Value.Text}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

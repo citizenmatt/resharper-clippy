@@ -13,7 +13,7 @@
         <StackPanel Orientation="Horizontal">
             <Button Content="Say" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="Speak"/>
             <Button Content="Tell" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakOk"/>
-            <Button Content="Ask Yes/No" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakYesNo"/>
+            <Button Content="Ask _Yes/No" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakYesNo"/>
             <Button Content="Ask Ok/Cancel" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakOkCancel"/>
             <Button Content="Three buttons" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="SpeakThreeButtons"/>
             <Button Content="Hide Balloon" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Padding="10,5,10,5" Click="HideBalloon"/>

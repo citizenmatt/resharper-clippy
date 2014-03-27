@@ -138,7 +138,7 @@ namespace TestHarness
         {
             var words = new[]
             {
-                "lorem", "ipsum", "dolor", "sit", "amet", "consectetuer",
+                "lo_rem", "ipsum", "dolor", "sit", "amet", "con_sectetuer",
                 "adipiscing", "elit", "sed", "diam", "nonummy", "nibh", "euismod",
                 "tincidunt", "ut", "laoreet", "dolore", "magna", "aliquam", "erat"
             };
