@@ -16,10 +16,8 @@
     
     <UserControl.CommandBindings>
         <CommandBinding Command="{x:Static balloon:Commands.SeeNextCommand}"
-                        CanExecute="OnCanExecuteShowNextCommand"
                         Executed="ExecutedShowNextCommand"/>
         <CommandBinding Command="{x:Static balloon:Commands.SeePreviousCommand}"
-                        CanExecute="OnCanExecuteShowPreviousCommand"
                         Executed="ExecutedShowPreviousCommand"/>
         <CommandBinding Command="{x:Static balloon:Commands.OptionCommand}"
                         Executed="ExecutedOptionCommand"/>
@@ -159,8 +157,7 @@
                 <!-- Options list -->
                 <StackPanel Margin="0,7,0,0">
                     <!-- TODO: Proper button styles -->
-                    <Button x:Name="SeePreviousButton"
-                            Visibility="{Binding ElementName=SeePreviousButton, Path=IsEnabled, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    <Button Visibility="{Binding ShowPreviousButton, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Command="{x:Static balloon:Commands.SeePreviousCommand}">See previous...</Button>
 
                     <ItemsControl ItemsSource="{Binding OptionsPage}" IsTabStop="False">
@@ -190,9 +187,8 @@
                     </ItemsControl>
 
                     <!-- TODO: Proper style -->
-                    <Button x:Name="SeeNextButton"
-                            Margin="0,7,0,0"
-                            Visibility="{Binding ElementName=SeeNextButton, Path=IsEnabled, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    <Button Margin="0,7,0,0"
+                            Visibility="{Binding ShowNextButton, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Command="{x:Static balloon:Commands.SeeNextCommand}">See more...</Button>
                 </StackPanel>
             </StackPanel>

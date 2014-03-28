@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using JetBrains.Annotations;
 using JetBrains.Util;
 using TextBoxBase = System.Windows.Controls.Primitives.TextBoxBase;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 {
-    public partial class BalloonWindow
+    public partial class BalloonWindow : INotifyPropertyChanged
     {
         private const int PageSize = 5;
 
@@ -85,20 +88,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             set { SetValue(HasButtonsProperty, value); }
         }
 
-        private void OnCanExecuteShowPreviousCommand(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = allOptions != null && currentPage > 0;
-        }
-
         private void ExecutedShowPreviousCommand(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
         {
             currentPage--;
             UpdateOptionsPage();
-        }
-
-        private void OnCanExecuteShowNextCommand(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = allOptions != null && ((currentPage + 1)*PageSize) < allOptions.Count;
         }
 
         private void ExecutedShowNextCommand(object sender, ExecutedRoutedEventArgs executedRoutedEventArgs)
@@ -113,7 +106,37 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             OptionsPage.AddRange(
                 allOptions.Skip(currentPage*PageSize).Take(PageSize).Select((o, i) => new Indexed<BalloonOption>(i, o)));
 
-            CommandManager.InvalidateRequerySuggested();
+            ShowPreviousButton = allOptions != null && currentPage > 0;
+            ShowNextButton = allOptions != null && ((currentPage + 1)*PageSize) < allOptions.Count;
+        }
+
+        private bool showPreviousButton;
+        private bool showNextButton;
+
+        public bool ShowPreviousButton
+        {
+            get { return showPreviousButton; }
+            set
+            {
+                if (value != showPreviousButton)
+                {
+                    showPreviousButton = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowNextButton
+        {
+            get { return showNextButton; }
+            set
+            {
+                if (value != showNextButton)
+                {
+                    showNextButton = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public void SetOptions(IList<BalloonOption> options)
@@ -155,6 +178,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             var handler = ButtonClicked;
             if (handler != null)
                 handler(this, new BalloonActionEventArgs<string>(index.Index, index.Value));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
