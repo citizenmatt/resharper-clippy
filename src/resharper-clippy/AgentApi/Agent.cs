@@ -59,15 +59,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Do(c => c.MoveTo((short) x, (short) y));
         }
 
-        public void Show()
+        public void Show(bool fancy = false)
         {
-            Do(c => c.Show());
+            Do(c => c.Show(fancy));
         }
 
-        public void Hide()
+        public void Hide(bool fancy = false)
         {
             // TODO: Look at request? Fire signal when it's finished?
-            Do(c => c.Hide());
+            Do(c => c.Hide(fancy));
         }
 
         public void Play(string animation)

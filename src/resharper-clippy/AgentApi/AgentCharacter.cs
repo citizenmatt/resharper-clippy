@@ -12,6 +12,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         private readonly AgentManager agentManager;
         private readonly BalloonManager balloon;
         private readonly IWin32Window characterWindow;
+        private readonly IDictionary<int, Action> requestHandlers; 
 
         public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager)
         {
@@ -26,6 +27,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             balloon = new BalloonManager(lifetime);
             balloon.ButtonClicked.FlowInto(lifetime, ButtonClicked);
             balloon.BalloonOptionClicked.FlowInto(lifetime, BalloonOptionClicked);
+
+            requestHandlers = new Dictionary<int, Action>();
 
             characterWindow = OleWin32Window.FromIOleWindow(character.Interface);
         }
@@ -43,8 +46,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 (short)(Character.OriginalHeight * DpiUtil.DpiVerticalFactor));
         }
 
-        public void Hide()
+        public void Hide(bool fancy = false)
         {
+            if (fancy && Visible)
+            {
+                balloon.ForceHide();
+                Play("Goodbye", () =>
+                {
+                    if (Visible)
+                        RegisterRequest(Character.Hide(true));
+                });
+                return;
+            }
+
             RegisterRequest(Character.Hide());
             balloon.ForceHide();
         }
@@ -55,14 +69,27 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
         }
 
-        public void Show()
+        public void Show(bool fancy = false)
         {
+            if (fancy && !Visible)
+            {
+                Character.Show(true);
+                Play("Greeting");
+                return;
+            }
             RegisterRequest(Character.Show());
         }
 
         public void Play(string animation)
         {
             var request = Character.Play(animation);
+            RegisterRequest(request);
+        }
+
+        public void Play(string animation, Action onComplete)
+        {
+            var request = Character.Play(animation);
+            requestHandlers.Add(request.ID, onComplete);
             RegisterRequest(request);
         }
 
@@ -118,6 +145,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void ICharacterEvents.OnRequestComplete(Request request)
         {
+            Action handler;
+            if (requestHandlers.TryGetValue(request.ID, out handler))
+            {
+                handler();
+                requestHandlers.Remove(request.ID);
+            }
         }
 
         void ICharacterEvents.OnMove(short x, short y, MoveCauseType cause)

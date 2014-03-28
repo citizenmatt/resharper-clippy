@@ -77,6 +77,7 @@
     </Compile>
     <Compile Include="AgentApi\Balloon\Indexed.cs" />
     <Compile Include="AgentApi\Balloon\JustifiedUniformGrid.cs" />
+    <Compile Include="SolutionVisibilityScope.cs" />
     <Compile Include="AgentApi\IUntypedSignalEx.cs" />
     <Compile Include="AgentApi\IWin32WindowEx.cs" />
     <Compile Include="AgentApi\OleWin32Window.cs" />
