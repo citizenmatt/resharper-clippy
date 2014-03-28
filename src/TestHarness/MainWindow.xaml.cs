@@ -3,31 +3,38 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Interop;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.DataFlow;
+using JetBrains.UI.Application;
 using JetBrains.Util;
 using JetBrains.Util.Interop;
 using MessageBox = JetBrains.Util.MessageBox;
 
 namespace TestHarness
 {
-    public partial class MainWindow
+    public partial class MainWindow : IMainWindow
     {
         private static readonly Random Rand = new Random();
 
-        private readonly Agent agent;
         private readonly SequentialLifetimes lifetimes;
+        private readonly Lifetime lifetime;
+        private Agent agent;
         private bool firstTime;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            var lifetime = EternalLifetime.Instance;
-
+            lifetime = EternalLifetime.Instance;
             lifetimes = new SequentialLifetimes(lifetime);
 
-            var agentManager = new AgentManager(lifetime);
+            Loaded += MainWindow_Loaded;
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            var agentManager = new AgentManager(lifetime, this);
             agentManager.Initialise();
 
             // Note, using this lifetime means we get alerts for ALL balloons,
@@ -97,10 +104,10 @@ namespace TestHarness
 
         private void ShowBalloon(string header, string message, IList<BalloonOption> options, params string[] buttons)
         {
-            lifetimes.Next(lifetime =>
+            lifetimes.Next(balloonLifetime =>
             {
                 var activate = ShowActivated.IsChecked.HasValue && ShowActivated.IsChecked.Value;
-                agent.ShowBalloon(lifetime, header, message, options, buttons, activate, _ => { });
+                agent.ShowBalloon(balloonLifetime, header, message, options, buttons, activate, _ => { });
             });
         }
 
@@ -127,11 +134,6 @@ namespace TestHarness
         private void SpeakThreeButtons(object sender, RoutedEventArgs e)
         {
             ShowBalloon(LoremIpsum(2, 5), LoremIpsum(4, 25), GetOptionsList(), "Yes", "Maybe", "maybe not", "No");
-        }
-
-        private void Think(object sender, RoutedEventArgs e)
-        {
-            //agent.Think("Hello world");
         }
 
         private void HideBalloon(object sender, RoutedEventArgs e)
@@ -174,5 +176,7 @@ namespace TestHarness
 
             agent.Play(animation);
         }
+
+        public IntPtr Handle { get { return new WindowInteropHelper(this).Handle; } }
     }
 }

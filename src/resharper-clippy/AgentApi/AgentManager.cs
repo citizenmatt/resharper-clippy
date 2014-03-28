@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using DoubleAgent.Control;
 using JetBrains.Application;
 using JetBrains.DataFlow;
+using JetBrains.UI.Application;
 using JetBrains.Util;
 using ActivationContext = CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.SxS.ActivationContext;
+using Control = DoubleAgent.Control.Control;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
@@ -12,14 +14,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     public class AgentManager
     {
         private readonly Lifetime lifetime;
+        private readonly IMainWindow mainWindow;
         private readonly FileSystemPath agentLocation;
         private readonly IDictionary<string, ICharacterEvents> events;
         private readonly IDictionary<int, ICharacterEvents> requests;
         private Control agentControl;
 
-        public AgentManager(Lifetime lifetime)
+        public AgentManager(Lifetime lifetime, IMainWindow mainWindow)
         {
             this.lifetime = lifetime;
+            this.mainWindow = mainWindow;
             agentLocation = FileSystemPath.Parse(GetType().Assembly.Location).Directory;
             events = new Dictionary<string, ICharacterEvents>();
             requests = new Dictionary<int, ICharacterEvents>();
@@ -32,7 +36,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
             var manifestLocation = agentLocation.Combine("DoubleAgent.sxs.manifest");
             agentControl = ActivationContext.Using(manifestLocation.FullPath, () => new Control());
+
             agentControl.AutoConnect = 0;
+            agentControl.AutoSize = true;
+            agentControl.CharacterStyle = (int) (CharacterStyleFlags.IdleEnabled
+                | CharacterStyleFlags.Smoothed
+                | CharacterStyleFlags.SoundEffects);
 
             agentControl.CharacterFiles.SearchPath = agentLocation.FullPath;
 
@@ -125,6 +134,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
             agentControl.Characters.Load(characterName, characterName + ".acs");
             var character = agentControl.Characters.Character(characterName);
+
+            OleWin32Window.FromIOleWindow(character.Interface).SetOwner(mainWindow);
+
             var agent = new AgentCharacter(lifetime, character, this);
             events.Add(characterName, agent);
             return agent;

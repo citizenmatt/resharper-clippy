@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using DoubleAgent.Control;
 using JetBrains.DataFlow;
-using JetBrains.Interop.WinApi;
-using JetBrains.Interop.WinApi.Wrappers;
 using JetBrains.Util.Interop;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
@@ -13,6 +11,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     {
         private readonly AgentManager agentManager;
         private readonly BalloonManager balloon;
+        private readonly IWin32Window characterWindow;
 
         public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager)
         {
@@ -27,6 +26,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             balloon = new BalloonManager(lifetime);
             balloon.ButtonClicked.FlowInto(lifetime, ButtonClicked);
             balloon.BalloonOptionClicked.FlowInto(lifetime, BalloonOptionClicked);
+
+            characterWindow = OleWin32Window.FromIOleWindow(character.Interface);
         }
 
         public Character Character { get; private set; }
@@ -71,7 +72,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             RegisterRequest(request);
             lifetime.AddAction(() =>
             {
-                if (request.Status == RequestStates.InProgress)
+                if (request.Status == (int)RequestStatus.InProgress)
                     Character.Play("Idle1_1");
             });
         }
@@ -90,9 +91,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
                 init(balloonLifetime);
 
-                // TODO: Yuck. Is this the best idea?
-                var owner = new Win32Window(WindowFromPoint(new POINT(Character.Left, Character.Top)));
-                balloon.Show(owner, Character.Left, Character.Top, Character.Width, Character.Height, activate);
+                balloon.Show(characterWindow, Character.Left, Character.Top, Character.Width, Character.Height, activate);
             });
         }
 
@@ -157,8 +156,5 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         void ICharacterEvents.OnShow(VisibilityCauseType cause)
         {
         }
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern IntPtr WindowFromPoint(POINT point);
     }
 }

@@ -1,0 +1,62 @@
+Index: DaCtlCharacter.cpp
+===================================================================
+--- DaCtlCharacter.cpp	(revision 497)
++++ DaCtlCharacter.cpp	(working copy)
+@@ -5407,3 +5407,25 @@
+ #endif
+ 	return lResult;
+ }
++
++HRESULT STDMETHODCALLTYPE DaCtlCharacter::GetWindow(HWND *phwnd)
++{
++	if (!phwnd) return E_POINTER;
++	*phwnd = NULL;
++
++	if (mLocalObject)
++	{
++		CAgentCharacterWnd* agentCharacterWnd = mLocalObject->GetCharacterWnd();
++		if (agentCharacterWnd)
++		{
++			*phwnd = (HWND) *agentCharacterWnd;
++			return S_OK;
++		}
++	}
++	return S_FALSE;
++}
++
++HRESULT STDMETHODCALLTYPE DaCtlCharacter::ContextSensitiveHelp(BOOL fEnterMode)
++{
++	return E_NOTIMPL;
++}
+\ No newline at end of file
+Index: DaCtlCharacter.h
+===================================================================
+--- DaCtlCharacter.h	(revision 497)
++++ DaCtlCharacter.h	(working copy)
+@@ -30,6 +30,7 @@
+ 	public CComCoClass<DaCtlCharacter, &__uuidof(DaCtlCharacter)>,
+ 	public IDispatchImpl<IDaCtlCharacter2, &__uuidof(IDaCtlCharacter2), &__uuidof(DoubleAgentCtl_TypeLib), DoubleAgentCtl_MajorVer, DoubleAgentCtl_MinorVer>,
+ 	public IProvideClassInfoImpl<&__uuidof(DaCtlCharacter), &__uuidof(DoubleAgentCtl_TypeLib), DoubleAgentCtl_MajorVer, DoubleAgentCtl_MinorVer>,
++	public IOleWindow,
+ 	public ISupportErrorInfo
+ {
+ public:
+@@ -77,6 +78,7 @@
+ 		COM_INTERFACE_ENTRY_IID(__uuidof(IAgentCtlCharacterEx), IDaCtlCharacter2)
+ 		COM_INTERFACE_ENTRY(ISupportErrorInfo)
+ 		COM_INTERFACE_ENTRY(IProvideClassInfo)
++		COM_INTERFACE_ENTRY(IOleWindow)
+ 	END_COM_MAP()
+ 
+ 	BEGIN_CATEGORY_MAP(DaCtlCharacter)
+@@ -199,6 +201,10 @@
+ 	HRESULT STDMETHODCALLTYPE get_SuspendHide (VARIANT_BOOL *Enabled);
+ 	HRESULT STDMETHODCALLTYPE SetSize (short Width, short Height);
+ 
++	// IOleWindow
++	HRESULT STDMETHODCALLTYPE GetWindow(HWND *phwnd);
++	HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode);
++
+ // Implementation
+ public:
+ 	IDispatchPtr	mBalloon;
