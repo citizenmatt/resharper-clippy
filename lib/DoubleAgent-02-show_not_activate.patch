@@ -1,0 +1,39 @@
+Index: Control/DaCtlCharacters.cpp
+===================================================================
+--- Control/DaCtlCharacters.cpp	(revision 497)
++++ Control/DaCtlCharacters.cpp	(working copy)
+@@ -559,7 +559,7 @@
+ 				&&	(SUCCEEDED (lResult = CComObject <DaCtlCharacter>::CreateInstance (lCharacter.Free())))
+ 				&&	(SUCCEEDED (lResult = lCharacter->SetOwner (mOwner)))
+ 				&&	(SUCCEEDED (lResult = lCharacter->mLocalObject->OpenFile (lAgentFile, lFilePathIsDefault)))
+-				&&	(SUCCEEDED (lResult = lCharacter->mLocalObject->RealizePopup (mOwner, mOwner->mLocalCharacterStyle, WS_EX_TOPMOST)))
++				&&	(SUCCEEDED (lResult = lCharacter->mLocalObject->RealizePopup (mOwner, mOwner->mLocalCharacterStyle, 0)))
+ 				)
+ 			{
+ 				if	(lLoadFile == lAgentFile)
+Index: Control/LocalCharacter.cpp
+===================================================================
+--- Control/LocalCharacter.cpp	(revision 497)
++++ Control/LocalCharacter.cpp	(working copy)
+@@ -230,7 +230,7 @@
+ 				&&	(lPopupWnd = GetPopupWnd (false))
+ 				)
+ 			{
+-				lPopupWnd->ShowWindow (SW_SHOW);
++				lPopupWnd->ShowWindow (SW_SHOWNA);
+ 			}
+ 
+ 			if	(
+Index: Core/AgentPopupWnd.cpp
+===================================================================
+--- Core/AgentPopupWnd.cpp	(revision 497)
++++ Core/AgentPopupWnd.cpp	(working copy)
+@@ -554,7 +554,7 @@
+ 	UpdateNotifyIcon ();
+ 	if	(pLastActive)
+ 	{
+-		BringWindowToTop ();
++		SetWindowPos(HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
+ 	}
+ }
+ 
