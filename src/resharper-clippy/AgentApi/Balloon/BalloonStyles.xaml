@@ -82,9 +82,9 @@
                     <BulletDecorator Background="Transparent" 
                                      Cursor="Hand"
                                      VerticalAlignment="Center"
-                                     Margin="5,5,0,5">
+                                     Margin="5,5,5,5">
                         <BulletDecorator.Bullet>
-                            <Viewbox x:Name="BulletRoot" Width="10">
+                            <Viewbox x:Name="BulletRoot" Width="12">
                                 <Canvas Width="128" Height="128">
                                     <Canvas.Resources>
                                         <BlurEffect x:Key="Blur" Radius="1" />
@@ -173,12 +173,6 @@
                                                                     Value="{StaticResource BaseCircleFillHover}">
                                             </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlossHighlightPath"
-                                                                       Storyboard.TargetProperty="(Shape.Fill)">
-                                            <DiscreteObjectKeyFrame KeyTime="0"
-                                                                    Value="{StaticResource GlossHighlightFillHover}">
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>-->
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -189,12 +183,6 @@
                                                                     Value="{StaticResource BaseCircleFillPressed}">
                                             </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlossHighlightPath"
-                                                                       Storyboard.TargetProperty="(Shape.Fill)">
-                                            <DiscreteObjectKeyFrame KeyTime="0"
-                                                                    Value="{StaticResource GlossHighlightFillHover}">
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>-->
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -211,8 +199,161 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <ContentPresenter Margin="8,0,5,0"
+                        <ContentPresenter Margin="8,0,0,0"
                                           VerticalAlignment="Center"
+                                          HorizontalAlignment="Left"
+                                          RecognizesAccessKey="True" />
+                    </BulletDecorator>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PreviousButtonStyle" TargetType="Button">
+        <Setter Property="Foreground">
+            <Setter.Value>
+                <SolidColorBrush Color="{DynamicResource NormalForegroundColor}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="MinHeight" Value="20" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ControlTemplate.Resources>
+                        <Color x:Key="NormalForegroundColor">Black</Color>
+                        <Color x:Key="HoverForegroundColor">#32328F</Color>
+                    </ControlTemplate.Resources>
+
+                    <BulletDecorator VerticalAlignment="Center" Margin="3,0,5,0">
+                        <BulletDecorator.Bullet>
+                            <Viewbox Width="17">
+                                <Canvas Width="128" Height="128">
+                                    <Canvas.Resources>
+                                        <RadialGradientBrush x:Key="BulletFill"
+                                                                     MappingMode="Absolute" SpreadMethod="Reflect"
+                                                                     Center="65,77" GradientOrigin="55,77"
+                                                                     RadiusX="34" RadiusY="34">
+                                            <RadialGradientBrush.Transform>
+                                                <MatrixTransform
+                                                            Matrix="2.3456212 -0.02235658 0.0182006 1.9095798 -53.713706 880.71381" />
+                                            </RadialGradientBrush.Transform>
+                                            <RadialGradientBrush.GradientStops>
+                                                <GradientStopCollection>
+                                                    <GradientStop Color="#FF2BA1FF" Offset="0.143" />
+                                                    <GradientStop Color="#FF2094FF" Offset="0.283" />
+                                                    <GradientStop Color="#FF002CC9" Offset="0.743" />
+                                                    <GradientStop Color="#FF00197B" Offset="0.902" />
+                                                    <GradientStop Color="#FF003060" Offset="1" />
+                                                </GradientStopCollection>
+                                            </RadialGradientBrush.GradientStops>
+                                        </RadialGradientBrush>
+                                    </Canvas.Resources>
+                                    <Polygon Points="0,95 60,33 120,95"
+                                                         Fill="{StaticResource BulletFill}" />
+                                </Canvas>
+                            </Viewbox>
+                        </BulletDecorator.Bullet>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="MouseOver">
+                                    <Storyboard>
+                                        <ColorAnimation To="{DynamicResource HoverForegroundColor}" 
+                                                        Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ColorAnimation To="{DynamicResource HoverForegroundColor}" 
+                                                        Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <ContentPresenter Margin="5,0,0,0"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Left"
+                                          RecognizesAccessKey="True" />
+                    </BulletDecorator>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NextButtonStyle" TargetType="Button">
+        <Setter Property="Foreground">
+            <Setter.Value>
+                <SolidColorBrush Color="{DynamicResource NormalForegroundColor}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="MinHeight" Value="23" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ControlTemplate.Resources>
+                        <Color x:Key="NormalForegroundColor">Black</Color>
+                        <Color x:Key="HoverForegroundColor">#32328F</Color>
+                    </ControlTemplate.Resources>
+
+                    <BulletDecorator VerticalAlignment="Center" Margin="3,0,5,0">
+                        <BulletDecorator.Bullet>
+                            <Viewbox Width="17">
+                                <Canvas Width="128" Height="128">
+                                    <Canvas.Resources>
+                                        <RadialGradientBrush x:Key="BulletFill"
+                                                                     MappingMode="Absolute" SpreadMethod="Reflect"
+                                                                     Center="65,77" GradientOrigin="55,77"
+                                                                     RadiusX="34" RadiusY="34">
+                                            <RadialGradientBrush.Transform>
+                                                <MatrixTransform
+                                                            Matrix="2.3456212 -0.02235658 0.0182006 1.9095798 -53.713706 880.71381" />
+                                            </RadialGradientBrush.Transform>
+                                            <RadialGradientBrush.GradientStops>
+                                                <GradientStopCollection>
+                                                    <GradientStop Color="#FF2B5EFF" Offset="0.146" />
+                                                    <GradientStop Color="#FF202DFF" Offset="0.347" />
+                                                    <GradientStop Color="#FF002CC9" Offset="0.544" />
+                                                    <GradientStop Color="#FF00197B" Offset="0.693" />
+                                                    <GradientStop Color="#FF003060" Offset="1" />
+                                                </GradientStopCollection>
+                                            </RadialGradientBrush.GradientStops>
+                                        </RadialGradientBrush>
+                                    </Canvas.Resources>
+                                    <Polygon Points="0,33 64,95 128,33"
+                                                         Fill="{StaticResource BulletFill}" />
+                                </Canvas>
+                            </Viewbox>
+                        </BulletDecorator.Bullet>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="MouseOver">
+                                    <Storyboard>
+                                        <ColorAnimation To="{DynamicResource HoverForegroundColor}" 
+                                                        Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ColorAnimation To="{DynamicResource HoverForegroundColor}" 
+                                                        Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <ContentPresenter Margin="5,0,0,0"
                                           HorizontalAlignment="Left"
                                           RecognizesAccessKey="True" />
                     </BulletDecorator>
