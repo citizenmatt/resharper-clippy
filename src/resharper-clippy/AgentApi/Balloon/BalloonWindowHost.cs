@@ -20,6 +20,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
         private GraphicsPath balloonPath;
         private bool showWithoutActivation;
         private Rectangle anchorBounds;
+        private Screen anchorScreen;
         private TailLocation tailLocation = TailLocation.Bottom;
 
         private enum TailLocation
@@ -167,34 +168,33 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
         public void SetAnchorBounds(int x, int y, int w, int h)
         {
             anchorBounds = new Rectangle(x, y, w, h);
+            anchorScreen = Screen.FromRectangle(anchorBounds);
             UpdateRegion();
         }
 
         private void UpdateLocation()
         {
-            var screen = Screen.FromRectangle(anchorBounds);
-
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
             var clientSize = ClientRectangle.Size;
-            if (CanBalloonFitOnTopOfTarget(clientSize, screen))
+            if (CanBalloonFitOnTopOfTarget(clientSize, anchorScreen))
             {
                 tailLocation = TailLocation.Bottom;
 
                 var windowSize = SizeFromClientSize(clientSize, tailLocation);
                 var x = anchorBounds.Left - ((windowSize.Width - anchorBounds.Width)/2);
-                x = Math.Max(x, screen.Bounds.Left);
-                x = Math.Min(x, screen.Bounds.Right - windowSize.Width);
+                x = Math.Max(x, anchorScreen.Bounds.Left);
+                x = Math.Min(x, anchorScreen.Bounds.Right - windowSize.Width);
                 SetBounds(x, anchorBounds.Top - windowSize.Height, windowSize.Width, windowSize.Height);
             }
-            else if (CanBalloonFitOnRightOfTarget(clientSize, screen))
+            else if (CanBalloonFitOnRightOfTarget(clientSize, anchorScreen))
             {
                 tailLocation = TailLocation.Left;
 
                 var windowSize = SizeFromClientSize(clientSize, tailLocation);
                 var y = anchorBounds.Top - ((windowSize.Height - anchorBounds.Height)/2);
-                y = Math.Max(y, screen.Bounds.Top);
-                y = Math.Min(y, screen.Bounds.Bottom - windowSize.Height);
+                y = Math.Max(y, anchorScreen.Bounds.Top);
+                y = Math.Min(y, anchorScreen.Bounds.Bottom - windowSize.Height);
                 SetBounds(anchorBounds.Right, y, windowSize.Width, windowSize.Height);
             }
             else
@@ -203,8 +203,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 
                 var windowSize = SizeFromClientSize(clientSize, tailLocation);
                 var y = anchorBounds.Top - ((windowSize.Height - anchorBounds.Height) / 2);
-                y = Math.Max(y, screen.Bounds.Top);
-                y = Math.Min(y, screen.Bounds.Bottom - windowSize.Height);
+                y = Math.Max(y, anchorScreen.Bounds.Top);
+                y = Math.Min(y, anchorScreen.Bounds.Bottom - windowSize.Height);
                 SetBounds(anchorBounds.Left - windowSize.Width, y, windowSize.Width, windowSize.Height);
             }
 
@@ -273,13 +273,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             Region = new Region(balloonPath);
         }
 
+        private const int Fudge = 3;
+
         private void InsertBalloonTailRight(GeometryPathFigure figure, Rectangle bounds)
         {
             if (tailLocation != TailLocation.Right)
                 return;
 
-            // TODO: Tail location needs to remain close to anchor point
-            var tailStart = bounds.Height / 2;
+            var anchorMid = anchorBounds.Top + (anchorBounds.Height/2);
+            var balloonTop = Math.Max(anchorMid - (bounds.Height/2), anchorScreen.Bounds.Top);
+
+            var tailStartAbsolute = Math.Min(Math.Max(anchorMid, balloonTop), balloonTop + bounds.Height - CornerRadius);
+            var tailStart = Math.Max(tailStartAbsolute - balloonTop, CornerRadius + (int) (TailLength/1.5) + Fudge);
+
             var tailEnd = tailStart + (int) (TailLength/1.5);
             figure.LineTo(bounds.Right, tailStart);
             figure.LineTo(bounds.Right + TailLength, tailStart);
@@ -291,8 +297,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             if (tailLocation != TailLocation.Bottom)
                 return;
 
-            // TODO: Tail location needs to remain close to anchor point
-            var tailStart = bounds.Width / 2;
+            var anchorMid = anchorBounds.Left + (anchorBounds.Width/2);
+            var balloonLeft = Math.Min(Math.Max(anchorMid - (bounds.Width/2), anchorScreen.Bounds.Left), anchorScreen.Bounds.Right - bounds.Width);
+
+            var tailStartAbsolute = Math.Min(Math.Max(anchorMid, balloonLeft),
+                balloonLeft + bounds.Width - CornerRadius);
+            var tailStart = Math.Max(tailStartAbsolute - balloonLeft, CornerRadius + (int)(TailLength / 1.5) + Fudge);
+
             var tailEnd = tailStart - (int)(TailLength/1.5);
             figure.LineTo(tailStart, bounds.Bottom);
             figure.LineTo(tailStart, bounds.Bottom + TailLength);
@@ -304,9 +315,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             if (tailLocation != TailLocation.Left)
                 return;
 
-            // TODO: Tail location needs to remain close to anchor point
-            var tailStart = bounds.Height / 2;
-            var tailEnd = tailStart - (int) (TailLength/1.5);
+            var anchorMid = anchorBounds.Top + (anchorBounds.Height/2);
+            var balloonTop = Math.Max(anchorMid - (bounds.Height/2), anchorScreen.Bounds.Top);
+
+            var tailStartAbsolute = Math.Min(Math.Max(anchorMid, balloonTop), balloonTop + bounds.Height - CornerRadius);
+            var tailStart = Math.Max(tailStartAbsolute - balloonTop, CornerRadius + (int)(TailLength / 1.5) + Fudge);
+
+            var tailEnd = tailStart - (int)(TailLength / 1.5);
             figure.LineTo(bounds.Left, tailStart);
             figure.LineTo(bounds.Left - TailLength, tailStart);
             figure.LineTo(bounds.Left, tailEnd);
