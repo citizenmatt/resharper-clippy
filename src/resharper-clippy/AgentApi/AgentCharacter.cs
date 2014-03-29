@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using DoubleAgent.Control;
 using JetBrains.DataFlow;
+using JetBrains.Extension;
 using JetBrains.Util.Interop;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
@@ -10,13 +11,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     public class AgentCharacter : ICharacterEvents
     {
         private readonly AgentManager agentManager;
+        private readonly IWin32Window owner;
         private readonly BalloonManager balloon;
         private readonly IWin32Window characterWindow;
-        private readonly IDictionary<int, Action> requestHandlers; 
+        private readonly IDictionary<int, Action> requestHandlers;
+        private Action initLocation;
 
-        public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager)
+        public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager, IWin32Window owner)
         {
             this.agentManager = agentManager;
+            this.owner = owner;
             Character = character;
             ScaleCharacterForDpi();
 
@@ -31,6 +35,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             requestHandlers = new Dictionary<int, Action>();
 
             characterWindow = OleWin32Window.FromIOleWindow(character.Interface);
+            characterWindow.SetOwner(owner);
+
+            initLocation = SetDefaultLocation;
         }
 
         public Character Character { get; private set; }
@@ -71,6 +78,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Show(bool fancy = false)
         {
+            initLocation();
+
             if (fancy && !Visible)
             {
                 Character.Show(true);
@@ -78,6 +87,28 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 return;
             }
             RegisterRequest(Character.Show());
+        }
+
+        private void SetDefaultLocation()
+        {
+            var ownerBounds = owner.GetBounds();
+
+            // If the owner is more than 3 times as high as the character, show it in the window corner, else show it in the screen corner
+            if (Character.Height < (ownerBounds.Height/3)
+                && Character.Width < (ownerBounds.Width/4))
+            {
+                MoveTo((short)(ownerBounds.Right - (Character.Width * 1.5)),
+                    (short)(ownerBounds.Bottom - (Character.Height * 1.5)));
+            }
+            else
+            {
+                var screen = Screen.FromHandle(owner.Handle);
+
+                MoveTo((short)(screen.WorkingArea.Right - (Character.Width * 1.5)),
+                    (short)(screen.WorkingArea.Bottom - (Character.Height * 1.5)));
+            }
+
+            initLocation = () => { };
         }
 
         public void Play(string animation)

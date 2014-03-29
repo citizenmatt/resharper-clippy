@@ -135,9 +135,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             agentControl.Characters.Load(characterName, characterName + ".acs");
             var character = agentControl.Characters.Character(characterName);
 
-            OleWin32Window.FromIOleWindow(character.Interface).SetOwner(mainWindow);
-
-            var agent = new AgentCharacter(lifetime, character, this);
+            var agent = new AgentCharacter(lifetime, character, this, mainWindow);
             events.Add(characterName, agent);
             return agent;
         }

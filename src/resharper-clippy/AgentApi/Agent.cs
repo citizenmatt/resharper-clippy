@@ -66,7 +66,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Hide(bool fancy = false)
         {
-            // TODO: Look at request? Fire signal when it's finished?
             Do(c => c.Hide(fancy));
         }
 

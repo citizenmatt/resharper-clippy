@@ -7,7 +7,6 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Intentions.Bulbs;
 using JetBrains.UI.BulbMenu;
-using DataConstants = JetBrains.TextControl.DataContext.DataConstants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -17,7 +16,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         private readonly Lifetime lifetime;
         private readonly Agent agent;
         private readonly BulbKeysBuilder bulbKeysBuilder;
-        private bool setPosition = true;
 
         public AltEnterHandler(Lifetime lifetime, Agent agent)
         {
@@ -33,19 +31,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         public bool HandleAction(IDataContext context)
         {
-            // TODO: Positioning should be in a common place
-            var textControl = context.GetData(DataConstants.TEXT_CONTROL);
-            if (textControl != null && setPosition)
-            {
-                Lifetimes.Using(l =>
-                {
-                    var rect = textControl.Window.CreateViewportAnchor(l);
-                    agent.SetLocation(rect.Rectangle.Value.Right - 250, rect.Rectangle.Value.Bottom - 250);
-                });
-
-                setPosition = false;
-            }
-
             var bulbActionKeys = GetBulbActionKeys(context);
             if (bulbActionKeys == null)
                 return false;
