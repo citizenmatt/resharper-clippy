@@ -66,6 +66,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             get { return ShowMenuWithOneItem; }
         }
 
-        string IOriginalActionHandler.Caption { get { return base.Caption; } }
+        string IOriginalActionHandler.Caption { get { return Caption; } }
     }
 }
