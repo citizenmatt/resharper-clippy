@@ -98,6 +98,7 @@
     <Compile Include="src\OverriddenActions\NavigateFromHereAction.cs" />
     <Compile Include="src\OverriddenActions\RefactorThisAction.cs" />
     <Compile Include="src\OverridingActionRegistrar.cs" />
+    <Compile Include="src\OverriddenActions\GotoRecentFilesAction.cs" />
     <Compile Include="src\SolutionVisibilityScope.cs" />
   </ItemGroup>
   <ItemGroup>

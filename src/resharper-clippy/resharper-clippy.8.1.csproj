@@ -92,6 +92,7 @@
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
     <Compile Include="src\OverriddenActions\GenerateAction.cs" />
+    <Compile Include="src\OverriddenActions\GotoRecentFilesAction.cs" />
     <Compile Include="src\OverriddenActions\RefactorThisAction.cs" />
     <Compile Include="src\OverriddenActions\IOriginalActionHandler.cs" />
     <Compile Include="src\OverriddenActions\NavigateFromHereAction.cs" />
