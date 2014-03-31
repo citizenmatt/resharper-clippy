@@ -7,9 +7,7 @@ using JetBrains.Application;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Feature.Services.ActionsMenu;
-using JetBrains.ReSharper.Feature.Services.Generate.Actions;
 using JetBrains.ReSharper.Feature.Services.Util;
-using JetBrains.ReSharper.LiveTemplates.FileTemplates;
 using JetBrains.UI.ActionSystem.ActionManager;
 using JetBrains.Util;
 using JetBrains.Util.Logging;
@@ -17,16 +15,27 @@ using DataConstants = JetBrains.ProjectModel.DataContext.DataConstants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    public class AgentExtensibleAction<TGenerateActionProvider>
-        where TGenerateActionProvider : class, IWorkflowProvider<IGenerateActionWorkflow, GenerateActionGroup>, IGenerateActionProvider
+    // This is messy, but necessary. We want to replace the menu that gets created
+    // in ExtensibleAction, but there are no easy overrides, so we have to do most
+    // of the leg work ourselves. To make matters more interesting, we can't be a
+    // base class, because the actions we want to override have another class in
+    // between themselves and ExtensibleAction. So, we defer to the helper class,
+    // which defers back to the original base class via an interface which exposes
+    // protected methods. Ugh. I need a shower now.
+    public class AgentExtensibleAction<TWorkflowProvider, TWorkflow, TActionGroup>
+        where TWorkflowProvider : class, IWorkflowProvider<TWorkflow, TActionGroup>
+        where TWorkflow : class, IWorkflow<TActionGroup>
+        where TActionGroup : ActionGroup
     {
         private readonly Lifetime lifetime;
-        private readonly IOriginalActionHandler<TGenerateActionProvider> handler;
+        private readonly IOriginalActionHandler<TWorkflowProvider, TWorkflow, TActionGroup> handler;
         private readonly Agent agent;
         private readonly IActionManager actionManager;
         private readonly IShortcutManager shortcutManager;
 
-        public AgentExtensibleAction(Lifetime lifetime, IOriginalActionHandler<TGenerateActionProvider> handler, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public AgentExtensibleAction(Lifetime lifetime,
+            IOriginalActionHandler<TWorkflowProvider, TWorkflow, TActionGroup> handler,
+            Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
             this.lifetime = lifetime;
             this.handler = handler;
@@ -76,26 +85,26 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             }
         }
 
-        private List<Pair<IGenerateActionWorkflow, TGenerateActionProvider>> GetWorkflowListToExecute(IDataContext dataContext)
+        private List<Pair<TWorkflow, TWorkflowProvider>> GetWorkflowListToExecute(IDataContext dataContext)
         {
             var providers = handler.GetWorkflowProviders();
             if (providers.Count == 0)
             {
-                Logger.Fail("Provider of type '{0}' has no implementations.", typeof(GenerateFromTemplateItemProvider));
+                Logger.Fail("Provider of type '{0}' has no implementations.", typeof(TWorkflowProvider));
                 return null;
             }
 
-            var toExecute = new List<Pair<IGenerateActionWorkflow, TGenerateActionProvider>>();
+            var toExecute = new List<Pair<TWorkflow, TWorkflowProvider>>();
 
             // check is there are available overridden providers...
-            var overriddenProviders = new LocalList<TGenerateActionProvider>();
+            var overriddenProviders = new LocalList<TWorkflowProvider>();
             foreach (var provider in providers)
             {
                 var overridingProvider = provider as IOverridingWorkflowProvider;
                 if (overridingProvider == null ||
                     !overridingProvider.HideOtherActions(dataContext)) continue;
 
-                overriddenProviders.Add((TGenerateActionProvider)overridingProvider);
+                overriddenProviders.Add((TWorkflowProvider)overridingProvider);
             }
 
             if (overriddenProviders.Count > 0)
@@ -117,7 +126,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
 
         private void ExecuteGroup(IDataContext context,
-            IEnumerable<Pair<IGenerateActionWorkflow, TGenerateActionProvider>> workflows,
+            IEnumerable<Pair<TWorkflow, TWorkflowProvider>> workflows,
             LifetimeDefinition dataContextLifetimeDefinition)
         {
             var groups = workflows.GroupBy(x => x.First.ActionGroup).ToList();
@@ -156,7 +165,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                 {
                     balloonLifetimeDefinition.Terminate();
 
-                    var workflow = o as IGenerateActionWorkflow;
+                    var workflow = o as TWorkflow;
                     if (workflow == null)
                         return;
 
@@ -178,7 +187,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                 options, new[] {"Cancel"}, true, init);
         }
 
-        private string GetShortcut(IWorkflow<GenerateActionGroup> workflow)
+        private string GetShortcut(IWorkflow<TActionGroup> workflow)
         {
             foreach (var actionId in new[] {workflow.ActionId, workflow.ShortActionId})
             {

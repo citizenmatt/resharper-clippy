@@ -9,15 +9,18 @@ using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
+
+    using ExtensibleActionHelper = AgentExtensibleAction<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
+    using IOriginalActionHandler = IOriginalActionHandler<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
+
     public class FileTemplatesGenerateAction : GenerateActionBase<GenerateFromTemplateItemProvider>,
-        IActionHandler, IOriginalActionHandler<GenerateFromTemplateItemProvider>
+        IActionHandler, IOriginalActionHandler
     {
-        private readonly AgentExtensibleAction<GenerateFromTemplateItemProvider> actionHelper;
+        private readonly ExtensibleActionHelper actionHelper;
 
         public FileTemplatesGenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
-            actionHelper = new AgentExtensibleAction<GenerateFromTemplateItemProvider>(lifetime, this, agent,
-                actionManager, shortcutManager);
+            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
         }
 
 
@@ -28,32 +31,32 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             actionHelper.Execute(dataContext, nextExecute);
         }
 
-        ICollection<GenerateFromTemplateItemProvider> IOriginalActionHandler<GenerateFromTemplateItemProvider>.GetWorkflowProviders()
+        ICollection<GenerateFromTemplateItemProvider> IOriginalActionHandler.GetWorkflowProviders()
         {
             return base.GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler<GenerateFromTemplateItemProvider>.CompareWorkflowItems(Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item1, Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item1, Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
 
-        bool IOriginalActionHandler<GenerateFromTemplateItemProvider>.IsAvailable(IDataContext context, IGenerateActionWorkflow workflow)
+        bool IOriginalActionHandler.IsAvailable(IDataContext context, IGenerateActionWorkflow workflow)
         {
             return IsAvailable(context, workflow);
         }
 
-        bool IOriginalActionHandler<GenerateFromTemplateItemProvider>.IsEnabled(IDataContext context, IGenerateActionWorkflow workflow)
+        bool IOriginalActionHandler.IsEnabled(IDataContext context, IGenerateActionWorkflow workflow)
         {
             return IsEnabled(context, workflow);
         }
 
-        void IOriginalActionHandler<GenerateFromTemplateItemProvider>.Execute(IDataContext context, IGenerateActionWorkflow workflow)
+        void IOriginalActionHandler.Execute(IDataContext context, IGenerateActionWorkflow workflow)
         {
             Execute(context, workflow);
         }
 
-        bool IOriginalActionHandler<GenerateFromTemplateItemProvider>.ShowMenuWithOneItem
+        bool IOriginalActionHandler.ShowMenuWithOneItem
         {
             get { return ShowMenuWithOneItem; }
         }

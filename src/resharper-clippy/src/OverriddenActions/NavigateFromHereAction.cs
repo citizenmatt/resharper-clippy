@@ -3,20 +3,21 @@ using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
-using JetBrains.ReSharper.Feature.Services.Generate.Actions;
+using JetBrains.ReSharper.Feature.Services.ContextNavigation;
+using JetBrains.ReSharper.Features.Finding.NavigateFromHere;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    using ExtensibleActionHelper = AgentExtensibleAction<IGenerateActionProvider, IGenerateActionWorkflow, GenerateActionGroup>;
-    using IOriginalActionHandler = IOriginalActionHandler<IGenerateActionProvider, IGenerateActionWorkflow, GenerateActionGroup>;
+    using ExtensibleActionHelper = AgentExtensibleAction<INavigateFromHereProvider, ContextNavigation, NavigationActionGroup>;
+    using IOriginalActionHandler = IOriginalActionHandler<INavigateFromHereProvider, ContextNavigation, NavigationActionGroup>;
 
-    public class GenerateAction : GenerateActionBase<IGenerateActionProvider>,
+    public class NavigateFromHereAction : ContextNavigationActionBase<INavigateFromHereProvider>,
         IActionHandler, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
 
-        public GenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public NavigateFromHereAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
             actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
         }
@@ -32,28 +33,27 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
 
 
-        ICollection<IGenerateActionProvider> IOriginalActionHandler.GetWorkflowProviders()
+        ICollection<INavigateFromHereProvider> IOriginalActionHandler.GetWorkflowProviders()
         {
             return GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, IGenerateActionProvider> item1, Pair<IGenerateActionWorkflow, IGenerateActionProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(Pair<ContextNavigation, INavigateFromHereProvider> item1, Pair<ContextNavigation, INavigateFromHereProvider> item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
 
-        bool IOriginalActionHandler.IsAvailable(IDataContext context, IGenerateActionWorkflow workflow)
+        bool IOriginalActionHandler.IsAvailable(IDataContext context, ContextNavigation workflow)
         {
             return IsAvailable(context, workflow);
         }
 
-        bool IOriginalActionHandler.IsEnabled(IDataContext context, IGenerateActionWorkflow workflow)
+        bool IOriginalActionHandler.IsEnabled(IDataContext context, ContextNavigation workflow)
         {
             return IsEnabled(context, workflow);
         }
 
-        void IOriginalActionHandler.Execute(IDataContext context,
-            IGenerateActionWorkflow workflow)
+        void IOriginalActionHandler.Execute(IDataContext context, ContextNavigation workflow)
         {
             Execute(context, workflow);
         }

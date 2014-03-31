@@ -12,6 +12,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         public OverridingActionRegistrar(Lifetime lifetime,
             Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
+            RegisterHandler(actionManager, "NavigateTo", lifetime,
+                new NavigateFromHereAction(lifetime, agent, actionManager, shortcutManager));
             RegisterHandler(actionManager, "Generate", lifetime,
                 new GenerateAction(lifetime, agent, actionManager, shortcutManager));
             RegisterHandler(actionManager, "GenerateFileBesides", lifetime, 
