@@ -172,7 +172,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             {
                 var requestStatus = (RequestStatus) request.Status;
                 if (requestStatus == RequestStatus.Pending || requestStatus == RequestStatus.InProgress)
+                {
                     Stop(request);
+                    Play("Idle1_1");
+                }
             });
         }
 
