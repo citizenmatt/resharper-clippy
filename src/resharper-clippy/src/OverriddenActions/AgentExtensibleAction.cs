@@ -136,7 +136,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                 if (delta == 0) return 0;
                 return delta > 0 ? 1 : -1;
             });
-
+            
             var options = new List<BalloonOption>();
 
             var showSeparatorForFirstItem = false;

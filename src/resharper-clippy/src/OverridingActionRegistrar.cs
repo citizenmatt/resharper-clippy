@@ -12,6 +12,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         public OverridingActionRegistrar(Lifetime lifetime,
             Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
+            RegisterHandler(actionManager, "RefactorThis", lifetime,
+                new RefactorThisAction(lifetime, agent, actionManager, shortcutManager));
             RegisterHandler(actionManager, "NavigateTo", lifetime,
                 new NavigateFromHereAction(lifetime, agent, actionManager, shortcutManager));
             RegisterHandler(actionManager, "Generate", lifetime,
