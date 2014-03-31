@@ -77,23 +77,42 @@
     </Compile>
     <Compile Include="AgentApi\Balloon\Indexed.cs" />
     <Compile Include="AgentApi\Balloon\JustifiedUniformGrid.cs" />
-    <Compile Include="FileTemplatesGenerateAction.cs" />
-    <Compile Include="OverridingActionRegistrar.cs" />
-    <Compile Include="SolutionVisibilityScope.cs" />
     <Compile Include="AgentApi\IUntypedSignalEx.cs" />
     <Compile Include="AgentApi\IWin32WindowEx.cs" />
     <Compile Include="AgentApi\OleWin32Window.cs" />
-    <Compile Include="AgentClickHandler.cs" />
-    <Compile Include="AltEnterHandler.cs" />
     <Compile Include="AgentApi\ICharacterEvents.cs" />
     <Compile Include="AgentApi\AgentCharacter.cs" />
     <Compile Include="AgentApi\Agent.cs" />
     <Compile Include="AgentApi\Balloon\BalloonActionEventArgs.cs" />
-    <Compile Include="HighlightingTracker.cs" />
-    <Compile Include="InplaceRefactoringHandler.cs" />
-    <Compile Include="InplaceRefactoringsHighlightingManagerWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AgentApi\SxS\ActivationContext.cs" />
+    <Compile Include="src\AgentApi\Agent.cs" />
+    <Compile Include="src\AgentApi\AgentCharacter.cs" />
+    <Compile Include="src\AgentApi\AgentManager.cs" />
+    <Compile Include="src\AgentApi\BalloonManager.cs" />
+    <Compile Include="src\AgentApi\BalloonOption.cs" />
+    <Compile Include="src\AgentApi\Balloon\BalloonActionEventArgs.cs" />
+    <Compile Include="src\AgentApi\Balloon\BalloonWindow.xaml.cs">
+      <DependentUpon>BalloonWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="src\AgentApi\Balloon\BalloonWindowHost.cs" />
+    <Compile Include="src\AgentApi\Balloon\Commands.cs" />
+    <Compile Include="src\AgentApi\Balloon\CustomChromeForm.cs" />
+    <Compile Include="src\AgentApi\Balloon\Indexed.cs" />
+    <Compile Include="src\AgentApi\Balloon\JustifiedUniformGrid.cs" />
+    <Compile Include="src\AgentApi\ICharacterEvents.cs" />
+    <Compile Include="src\AgentApi\IUntypedSignalEx.cs" />
+    <Compile Include="src\AgentApi\IWin32WindowEx.cs" />
+    <Compile Include="src\AgentApi\OleWin32Window.cs" />
+    <Compile Include="src\AgentApi\SxS\ActivationContext.cs" />
+    <Compile Include="src\AgentClickHandler.cs" />
+    <Compile Include="src\AltEnterHandler.cs" />
+    <Compile Include="src\FileTemplatesGenerateAction.cs" />
+    <Compile Include="src\HighlightingTracker.cs" />
+    <Compile Include="src\InplaceRefactoringHandler.cs" />
+    <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="src\OverridingActionRegistrar.cs" />
+    <Compile Include="src\SolutionVisibilityScope.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\lib\CLIPPIT.ACS">
@@ -143,6 +162,18 @@
     <Page Include="AgentApi\Balloon\BalloonStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="src\AgentApi\Balloon\BalloonStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="src\AgentApi\Balloon\BalloonWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="src\AgentApi\Balloon\DefaultStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
