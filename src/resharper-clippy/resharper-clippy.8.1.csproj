@@ -86,10 +86,13 @@
     <Compile Include="src\AgentApi\AgentCharacter.cs" />
     <Compile Include="src\AgentApi\Agent.cs" />
     <Compile Include="src\AgentApi\Balloon\BalloonActionEventArgs.cs" />
+    <Compile Include="src\OverriddenActions\AgentExtensibleAction.cs" />
     <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="src\OverriddenActions\GenerateAction.cs" />
+    <Compile Include="src\OverriddenActions\IOriginalActionHandler.cs" />
     <Compile Include="src\OverridingActionRegistrar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\AgentApi\SxS\ActivationContext.cs" />

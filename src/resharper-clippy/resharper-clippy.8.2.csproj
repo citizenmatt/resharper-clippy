@@ -91,7 +91,10 @@
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="src\OverriddenActions\AgentExtensibleAction.cs" />
     <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
+    <Compile Include="src\OverriddenActions\GenerateAction.cs" />
+    <Compile Include="src\OverriddenActions\IOriginalActionHandler.cs" />
     <Compile Include="src\OverridingActionRegistrar.cs" />
     <Compile Include="src\SolutionVisibilityScope.cs" />
   </ItemGroup>
