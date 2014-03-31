@@ -26,7 +26,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             if (tag == null)
                 throw new ArgumentNullException("tag");
 
-            Text = text;
+            Text = text.Replace("&", "_");
             RequiresSeparator = requiresSeparator;
             Enabled = enabled;
             Tag = tag;
