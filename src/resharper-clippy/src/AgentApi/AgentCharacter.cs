@@ -141,6 +141,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             if (!Character.Visible)
                 Show();
 
+            Play("Idle1_1");
+
             balloon.CreateNew(clientLifetime, balloonLifetime =>
             {
                 balloon.SetText(header, message);
