@@ -37,8 +37,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 var options = GetOptions();
 
                 agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?",
-                    "(Note: Need to make list smarter based on solution open/closed, etc)",
-                    options, buttons, true,
+                    string.Empty, options, buttons, true,
                     balloonLifetime =>
                     {
                         agent.BalloonOptionClicked.Advise(balloonLifetime, tag =>
@@ -70,9 +69,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 AddAction(options, "InspectThis");
                 AddAction(options, "Generate");
                 AddAction(options, "GenerateFileBesides");
+                AddAction(options, "CleanupCode");
                 AddAction(options, "FindUsages");
                 AddAction(options, "GotoSymbol");
-                AddAction(options, "CleanupCode");
+                AddAction(options, "GotoRecentFiles");
+                AddAction(options, "GotoRecentEdits");
             });
             return options;
         }
