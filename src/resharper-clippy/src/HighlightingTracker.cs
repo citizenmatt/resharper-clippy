@@ -8,11 +8,6 @@ using JetBrains.TextControl.DocumentMarkup;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
-    // TODO: Daemon.DaemonStageChanged2?
-    // TODO: Paste on import? See ImportsForPastedContextAction
-    // TODO: Add references popup?
-
-
     public interface IHighlightingChangeHandler
     {
         void OnHighlightingChanged(IDocument document, ICollection<IHighlighter> added, ICollection<IHighlighter> removed, ICollection<IHighlighter> modified);
