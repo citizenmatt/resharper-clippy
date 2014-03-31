@@ -3,7 +3,7 @@
   <metadata>
     <id>resharper-clippy</id>
     <title>Clippy for ReSharper</title>
-    <version>0.1-alpha-20140311</version>
+    <version>0.1-beta-20140331</version>
     <authors>Matt Ellis</authors>
     <owners>Matt Ellis</owners>
     <description>A digital assistant to help you with all your ReSharper needs!</description>
