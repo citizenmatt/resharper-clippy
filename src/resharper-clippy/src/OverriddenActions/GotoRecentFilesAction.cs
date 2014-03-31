@@ -21,7 +21,53 @@ using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    public class GotoRecentFilesAction : IActionHandler
+    public class GotoRecentEditsAction : GotoRecentActionBase, IActionHandler
+    {
+        public GotoRecentEditsAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
+                                     IPsiFiles psiFiles, RecentFilesTracker tracker,
+                                     OccurencePresentationManager presentationManager,
+                                     MainWindowPopupWindowContext popupWindowContext)
+            : base(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, popupWindowContext)
+        {
+        }
+
+        public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
+        {
+            return nextUpdate();
+        }
+
+        public void Execute(IDataContext context, DelegateExecute nextExecute)
+        {
+            using(ReadLockCookie.Create())
+            {
+                PsiFiles.CommitAllDocuments();
+                ShowLocations(Tracker.EditLocations, Tracker.CurrentEdit, "Recent Edits", true);
+            }
+        }
+    }
+
+    public class GotoRecentFilesAction : GotoRecentActionBase, IActionHandler
+    {
+        public GotoRecentFilesAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
+                                     IPsiFiles psiFiles, RecentFilesTracker tracker,
+                                     OccurencePresentationManager presentationManager,
+                                     MainWindowPopupWindowContext popupWindowContext)
+            : base(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, popupWindowContext)
+        {
+        }
+
+        public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
+        {
+            return nextUpdate();
+        }
+
+        public void Execute(IDataContext context, DelegateExecute nextExecute)
+        {
+            ShowLocations(Tracker.FileLocations, Tracker.CurrentFile, "Recent Files", false);
+        }
+    }
+
+    public class GotoRecentActionBase
     {
         private readonly Lifetime lifetime;
         private readonly Agent agent;
@@ -32,7 +78,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         private readonly OccurencePresentationManager presentationManager;
         private readonly MainWindowPopupWindowContext popupWindowContext;
 
-        public GotoRecentFilesAction(Lifetime lifetime, Agent agent, ISolution solution,
+        protected GotoRecentActionBase(Lifetime lifetime, Agent agent, ISolution solution,
             IShellLocks shellLocks, IPsiFiles psiFiles, RecentFilesTracker tracker,
             OccurencePresentationManager presentationManager, MainWindowPopupWindowContext popupWindowContext)
         {
@@ -46,18 +92,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             this.popupWindowContext = popupWindowContext;
         }
 
-        public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
+        protected RecentFilesTracker Tracker
         {
-            return nextUpdate();
+            get { return tracker; }
         }
 
-        public void Execute(IDataContext context, DelegateExecute nextExecute)
+        protected IPsiFiles PsiFiles
         {
-            ShowLocations(tracker.FileLocations, tracker.CurrentFile, "Recent Files", false);
+            get { return psiFiles; }
         }
+
 
         // ReSharper disable ConvertToLambdaExpression
-        private void ShowLocations(IList<FileLocationInfo> locations, FileLocationInfo currentLocation, string caption, bool bindToPsi)
+        protected void ShowLocations(IList<FileLocationInfo> locations, FileLocationInfo currentLocation, string caption, bool bindToPsi)
         {
             var lifetimeDefinition = Lifetimes.Define(lifetime);
 
@@ -101,7 +148,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                         {
                             using (ReadLockCookie.Create())
                             {
-                                psiFiles.CommitAllDocuments();
+                                PsiFiles.CommitAllDocuments();
                                 var occurence = GetOccurence(locationInfo, bindToPsi);
                                 if (occurence != null)
                                     occurence.Navigate(solution, popupWindowContext.Source, true);

@@ -8,6 +8,7 @@ using JetBrains.ReSharper.Feature.Services.Occurences.Presentation;
 using JetBrains.ReSharper.Features.Environment.RecentFiles;
 using JetBrains.ReSharper.Psi.Files;
 using JetBrains.UI.PopupWindowManager;
+using GotoRecentEditsAction = CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions.GotoRecentEditsAction;
 using GotoRecentFilesAction = CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions.GotoRecentFilesAction;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
@@ -31,6 +32,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             RegisterHandler(actionManager, "GotoRecentFiles", lifetime,
                 new GotoRecentFilesAction(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, mainWindowPopupWindowContext));
+            RegisterHandler(actionManager, "GotoRecentEdits", lifetime,
+                new GotoRecentEditsAction(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, mainWindowPopupWindowContext));
         }
 
         private static void RegisterHandler(IActionManager actionManager, string actionId, Lifetime lifetime, IActionHandler handler)
