@@ -15,6 +15,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         private readonly BalloonManager balloon;
         private readonly IWin32Window characterWindow;
         private readonly IDictionary<int, Action> requestHandlers;
+        private readonly Random random;
         private Action initLocation;
 
         public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager, IWin32Window owner)
@@ -38,6 +39,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             characterWindow.SetOwner(owner);
 
             initLocation = SetDefaultLocation;
+
+            random = new Random();
         }
 
         public Character Character { get; private set; }
@@ -111,10 +114,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             initLocation = () => { };
         }
 
+        public void PlayRandom()
+        {
+            var names = Character.Animations;
+            var name = names[random.Next(names.Length)];
+            Play(name);
+        }
+
         public void Play(string animation)
         {
-            var request = Character.Play(animation);
-            RegisterRequest(request);
+            RegisterRequest(Character.Play(animation));
         }
 
         public void Play(string animation, Action onComplete)
@@ -135,13 +144,18 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             });
         }
 
+        public void StopAll()
+        {
+            Character.StopAll();
+        }
+
         public void ShowBalloon(Lifetime clientLifetime, string header, string message,
             IList<BalloonOption> options, IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
+            StopAll();
+
             if (!Character.Visible)
                 Show();
-
-            Play("Idle1_1");
 
             balloon.CreateNew(clientLifetime, balloonLifetime =>
             {
@@ -196,6 +210,21 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             // 1 for left, 2 for right, 4 for middle. Presumably flags?
             if (button == 1)
                 AgentClicked.Fire();
+            if (button == 2)
+            {
+                var menuStrip = new ContextMenuStrip();
+                menuStrip.Items.Add("Hide", null, (_, __) =>
+                {
+                    StopAll();
+                    Hide();
+                });
+                menuStrip.Items.Add("Animate", null, (_, __) =>
+                {
+                    StopAll();
+                    PlayRandom();
+                });
+                menuStrip.Show(x, y);
+            }
         }
 
         void ICharacterEvents.OnCommand(UserInput userInput)

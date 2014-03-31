@@ -38,8 +38,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             agentControl = ActivationContext.Using(manifestLocation.FullPath, () => new Control());
 
             agentControl.AutoConnect = 0;
-            agentControl.CharacterStyle = (int) (CharacterStyleFlags.AutoPopupMenu
-                | CharacterStyleFlags.IdleEnabled
+            agentControl.CharacterStyle = (int) (CharacterStyleFlags.IdleEnabled
                 | CharacterStyleFlags.Smoothed
                 | CharacterStyleFlags.SoundEffects);
 
