@@ -47,6 +47,11 @@
       <HintPath>..\..\lib\DoubleAgent.Control.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
+    <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\lib\envdte.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -86,6 +91,7 @@
     <Compile Include="src\AgentApi\AgentCharacter.cs" />
     <Compile Include="src\AgentApi\Agent.cs" />
     <Compile Include="src\AgentApi\Balloon\BalloonActionEventArgs.cs" />
+    <Compile Include="src\BuildAnimations.cs" />
     <Compile Include="src\OverriddenActions\AgentExtensibleAction.cs" />
     <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\HighlightingTracker.cs" />

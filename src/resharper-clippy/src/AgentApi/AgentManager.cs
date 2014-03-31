@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using DoubleAgent.Control;
 using JetBrains.Application;
 using JetBrains.DataFlow;
@@ -100,6 +101,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void agentControl_RequestStart(Request request)
         {
+            Debug.WriteLine("Request start: {0} {1}", request.ID, (RequestStatus)request.Status);
+
             ICharacterEvents agent;
             if(requests.TryGetValue(request.ID, out agent))
                 agent.OnRequestStart(request);
@@ -107,6 +110,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void agentControl_RequestComplete(Request request)
         {
+            Debug.WriteLine("Request complete: {0} {1}", request.ID, (RequestStatus)request.Status);
+
             ICharacterEvents agent;
             if (requests.TryGetValue(request.ID, out agent))
             {
@@ -148,6 +153,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void RegisterRequest(Request request, AgentCharacter agentCharacter)
         {
+            Debug.WriteLine("Register request: {0} {1}", request.ID, (RequestStatus)request.Status);
             requests.Add(request.ID, agentCharacter);
         }
     }

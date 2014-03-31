@@ -45,6 +45,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public Character Character { get; private set; }
 
+        // Requests are a PITA. Everything you do returns a request so you can track it
+        // and act on completion. They're queued, so happen consecutively. But certain
+        // animations are looping, and you don't know which ones, so you have to call
+        // Stop before queueing up any more animations. But that doesn't clear the queue
+        // so another looping animation might happen before you get in, so you have to
+        // clear all animations, but not move requests, because they might be useful.
+        // Oh, and the request start/end notifications are sent to the agent control,
+        // not the character, so we have to register the request and the character with
+        // the control, so we route effectively. I'd love to see how Office got this
+        // horrible API to work so well for them
         private void RegisterRequest(Request request)
         {
             agentManager.RegisterRequest(request, this);
@@ -58,6 +68,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Hide(bool fancy = false)
         {
+            // Stop everything and flush the queue before hiding
+            StopAll();
+
             if (fancy && Visible)
             {
                 balloon.ForceHide();
@@ -75,6 +88,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void MoveTo(short x, short y)
         {
+            // Queue the move up, after the current animation
+            // TODO: Is that wise? Is the agent smart enough to do both?
             RegisterRequest(Character.MoveTo(x, y));
             balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
         }
@@ -85,7 +100,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
             if (fancy && !Visible)
             {
-                Character.Show(true);
+                RegisterRequest(Character.Show(true));
                 Play("Greeting");
                 return;
             }
@@ -116,6 +131,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void PlayRandom()
         {
+            // Stop the current, potentially looping animation, and any other
+            // (potentially looping) animations in the queue before playing ours
+            StopAllAnimations();
+
             var names = Character.Animations;
             var name = names[random.Next(names.Length)];
             Play(name);
@@ -123,11 +142,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Play(string animation)
         {
+            // Stop the current, potentially looping animation, and any other
+            // (potentially looping) animations in the queue before playing ours
+            StopAllAnimations();
+
             RegisterRequest(Character.Play(animation));
         }
 
         public void Play(string animation, Action onComplete)
         {
+            // Stop the current, potentially looping animation, and any other
+            // (potentially looping) animations in the queue before playing ours
+            StopAllAnimations();
+
             var request = Character.Play(animation);
             requestHandlers.Add(request.ID, onComplete);
             RegisterRequest(request);
@@ -135,24 +162,43 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public void Play(Lifetime lifetime, string animation)
         {
+            // Stop the current, potentially looping animation, and any other
+            // (potentially looping) animations in the queue before playing ours
+            StopAllAnimations();
+
             var request = Character.Play(animation);
             RegisterRequest(request);
             lifetime.AddAction(() =>
             {
-                if (request.Status == (int)RequestStatus.InProgress)
-                    Character.Play("Idle1_1");
+                var requestStatus = (RequestStatus) request.Status;
+                if (requestStatus == RequestStatus.Pending || requestStatus == RequestStatus.InProgress)
+                    Stop(request);
             });
+        }
+
+        public void StopAllAnimations()
+        {
+            // Stop the current and all queued animations, but leave any other requests alone
+            Character.StopAll("Play");
         }
 
         public void StopAll()
         {
+            // Stop everything and flush the queue
             Character.StopAll();
+        }
+
+        public void Stop(Request request)
+        {
+            // Just stop this request
+            Character.Stop(request.Interface);
         }
 
         public void ShowBalloon(Lifetime clientLifetime, string header, string message,
             IList<BalloonOption> options, IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
-            StopAll();
+            // Stop all animations, should stop the idle animation when we're doing something
+            StopAllAnimations();
 
             if (!Character.Visible)
                 Show();
@@ -213,16 +259,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             if (button == 2)
             {
                 var menuStrip = new ContextMenuStrip();
-                menuStrip.Items.Add("Hide", null, (_, __) =>
-                {
-                    StopAll();
-                    Hide();
-                });
-                menuStrip.Items.Add("Animate", null, (_, __) =>
-                {
-                    StopAll();
-                    PlayRandom();
-                });
+                menuStrip.Items.Add("Hide", null, (_, __) => Hide());
+                menuStrip.Items.Add("Animate", null, (_, __) => PlayRandom());
                 menuStrip.Show(x, y);
             }
         }
