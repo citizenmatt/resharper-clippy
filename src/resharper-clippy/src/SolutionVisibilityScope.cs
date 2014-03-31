@@ -1,7 +1,8 @@
 ﻿using System;
+using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ProjectModel;
 
-namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
+namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
     [SolutionComponent]
     public class SolutionVisibilityScope : IDisposable

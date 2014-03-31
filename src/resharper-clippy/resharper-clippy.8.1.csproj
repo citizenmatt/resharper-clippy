@@ -86,7 +86,7 @@
     <Compile Include="src\AgentApi\AgentCharacter.cs" />
     <Compile Include="src\AgentApi\Agent.cs" />
     <Compile Include="src\AgentApi\Balloon\BalloonActionEventArgs.cs" />
-    <Compile Include="src\FileTemplatesGenerateAction.cs" />
+    <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />

@@ -107,10 +107,10 @@
     <Compile Include="src\AgentApi\SxS\ActivationContext.cs" />
     <Compile Include="src\AgentClickHandler.cs" />
     <Compile Include="src\AltEnterHandler.cs" />
-    <Compile Include="src\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\OverridingActionRegistrar.cs" />
     <Compile Include="src\SolutionVisibilityScope.cs" />
   </ItemGroup>

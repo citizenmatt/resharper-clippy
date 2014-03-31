@@ -15,9 +15,8 @@ using JetBrains.UI.ActionSystem.ActionManager;
 using JetBrains.Util;
 using JetBrains.Util.Logging;
 using DataConstants = JetBrains.ProjectModel.DataContext.DataConstants;
-using DataConstantsTC = JetBrains.TextControl.DataContext.DataConstants;
 
-namespace CitizenMatt.ReSharper.Plugins.Clippy
+namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
     public class FileTemplatesGenerateAction : GenerateActionBase<GenerateFromTemplateItemProvider>, IActionHandler
     {

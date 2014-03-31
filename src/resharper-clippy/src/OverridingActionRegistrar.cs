@@ -1,4 +1,5 @@
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
+using CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions;
 using JetBrains.ActionManagement;
 using JetBrains.DataFlow;
 using JetBrains.ProjectModel;
