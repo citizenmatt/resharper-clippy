@@ -139,12 +139,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
             var options = new List<BalloonOption>();
 
+            var showSeparatorForFirstItem = false;
             foreach (var group in groups)
             {
                 var items = group.ToList();
                 items.Sort(handler.CompareWorkflowItems);
 
-                var isFirst = true;
+                var isFirst = showSeparatorForFirstItem;
                 foreach (var item in items)
                 {
                     if (handler.IsEnabled(context, item.First))
@@ -155,6 +156,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                         isFirst = false;
                     }
                 }
+                showSeparatorForFirstItem = true;
             }
 
             var balloonLifetimeDefinition = Lifetimes.Define(lifetime);
