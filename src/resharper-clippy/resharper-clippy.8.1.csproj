@@ -102,14 +102,6 @@
     <Compile Include="src\SolutionVisibilityScope.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\lib\CLIPPIT.ACS">
-      <Link>CLIPPIT.ACS</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\lib\Robby.acs">
-      <Link>Robby.acs</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="DoubleAgent.sxs.manifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -117,22 +109,6 @@
     <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\lib\Debug\DaControl.dll">
-      <Link>DaControl.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\lib\Debug\DaControl.pdb">
-      <Link>DaControl.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\lib\Debug\DaCore.dll">
-      <Link>DaCore.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\lib\Debug\DaCore.pdb">
-      <Link>DaCore.pdb</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="readme.html">
       <DependentUpon>readme.md</DependentUpon>
     </Content>
@@ -160,10 +136,5 @@
     <Error Condition="!Exists('..\packages\JetBrains.ReSharper.SDK.8.1.555\build\JetBrains.ReSharper.SDK.Targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\JetBrains.ReSharper.SDK.8.1.555\build\JetBrains.ReSharper.SDK.Targets'))" />
   </Target>
   <Import Project="..\packages\JetBrains.ReSharper.SDK.8.1.555\build\JetBrains.ReSharper.SDK.Targets" Condition="Exists('..\packages\JetBrains.ReSharper.SDK.8.1.555\build\JetBrains.ReSharper.SDK.Targets')" />
-  <PropertyGroup>
-    <PostBuildEvent>copy $(SolutionDir)..\lib\Debug\DaControl.dll $(TargetDir)
-copy $(SolutionDir)..\lib\Debug\DaControl.pdb $(TargetDir)
-copy $(SolutionDir)..\lib\Debug\DaCore.dll $(TargetDir)
-copy $(SolutionDir)..\lib\Debug\DaCore.pdb $(TargetDir)</PostBuildEvent>
-  </PropertyGroup>
+  <Import Project="AgentFiles.proj" />
 </Project>
