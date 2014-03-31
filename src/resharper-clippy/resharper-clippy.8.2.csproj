@@ -62,30 +62,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AgentApi\AgentManager.cs" />
-    <Compile Include="AgentApi\BalloonManager.cs" />
-    <Compile Include="AgentApi\BalloonOption.cs" />
-    <Compile Include="AgentApi\Balloon\BalloonWindow.xaml.cs">
-      <DependentUpon>BalloonWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="AgentApi\Balloon\BalloonWindowHost.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AgentApi\Balloon\Commands.cs" />
-    <Compile Include="AgentApi\Balloon\CustomChromeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AgentApi\Balloon\Indexed.cs" />
-    <Compile Include="AgentApi\Balloon\JustifiedUniformGrid.cs" />
-    <Compile Include="AgentApi\IUntypedSignalEx.cs" />
-    <Compile Include="AgentApi\IWin32WindowEx.cs" />
-    <Compile Include="AgentApi\OleWin32Window.cs" />
-    <Compile Include="AgentApi\ICharacterEvents.cs" />
-    <Compile Include="AgentApi\AgentCharacter.cs" />
-    <Compile Include="AgentApi\Agent.cs" />
-    <Compile Include="AgentApi\Balloon\BalloonActionEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AgentApi\SxS\ActivationContext.cs" />
     <Compile Include="src\AgentApi\Agent.cs" />
     <Compile Include="src\AgentApi\AgentCharacter.cs" />
     <Compile Include="src\AgentApi\AgentManager.cs" />
@@ -95,9 +72,13 @@
     <Compile Include="src\AgentApi\Balloon\BalloonWindow.xaml.cs">
       <DependentUpon>BalloonWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="src\AgentApi\Balloon\BalloonWindowHost.cs" />
+    <Compile Include="src\AgentApi\Balloon\BalloonWindowHost.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\AgentApi\Balloon\Commands.cs" />
-    <Compile Include="src\AgentApi\Balloon\CustomChromeForm.cs" />
+    <Compile Include="src\AgentApi\Balloon\CustomChromeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\AgentApi\Balloon\Indexed.cs" />
     <Compile Include="src\AgentApi\Balloon\JustifiedUniformGrid.cs" />
     <Compile Include="src\AgentApi\ICharacterEvents.cs" />
@@ -151,18 +132,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="AgentApi\Balloon\DefaultStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="AgentApi\Balloon\BalloonWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="AgentApi\Balloon\BalloonStyles.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="src\AgentApi\Balloon\BalloonStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
