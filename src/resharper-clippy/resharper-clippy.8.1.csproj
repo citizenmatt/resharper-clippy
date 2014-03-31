@@ -86,9 +86,11 @@
     <Compile Include="AgentApi\AgentCharacter.cs" />
     <Compile Include="AgentApi\Agent.cs" />
     <Compile Include="AgentApi\Balloon\BalloonActionEventArgs.cs" />
+    <Compile Include="FileTemplatesGenerateAction.cs" />
     <Compile Include="HighlightingTracker.cs" />
     <Compile Include="InplaceRefactoringHandler.cs" />
     <Compile Include="InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="OverridingActionRegistrar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AgentApi\SxS\ActivationContext.cs" />
     <Compile Include="SolutionVisibilityScope.cs" />
