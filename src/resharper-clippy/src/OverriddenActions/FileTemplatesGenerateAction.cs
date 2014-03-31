@@ -5,11 +5,11 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Feature.Services.Generate.Actions;
 using JetBrains.ReSharper.LiveTemplates.FileTemplates;
+using JetBrains.UI.RichText;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-
     using ExtensibleActionHelper = AgentExtensibleAction<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
     using IOriginalActionHandler = IOriginalActionHandler<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
 
@@ -21,6 +21,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         public FileTemplatesGenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
         {
             actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
+        }
+
+        protected override RichText Caption
+        {
+            get { return "Create File From Template"; }
         }
 
 
@@ -60,5 +65,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         {
             get { return ShowMenuWithOneItem; }
         }
+
+        string IOriginalActionHandler.Caption { get { return base.Caption; } }
     }
 }

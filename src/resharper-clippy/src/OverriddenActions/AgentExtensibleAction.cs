@@ -185,7 +185,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                 });
             };
 
-            agent.ShowBalloon(balloonLifetimeDefinition.Lifetime, "Create File From Template", string.Empty,
+            agent.ShowBalloon(balloonLifetimeDefinition.Lifetime, handler.Caption, string.Empty,
                 options, new[] {"Cancel"}, true, init);
         }
 

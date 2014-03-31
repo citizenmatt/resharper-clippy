@@ -5,6 +5,7 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Feature.Services.ContextNavigation;
 using JetBrains.ReSharper.Features.Finding.NavigateFromHere;
+using JetBrains.UI.RichText;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
@@ -30,6 +31,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         protected override bool ShowMenuWithOneItem
         {
             get { return true; }
+        }
+
+        protected override RichText Caption
+        {
+            get { return "Navigate to"; }
         }
 
 
@@ -62,5 +68,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         {
             get { return ShowMenuWithOneItem; }
         }
+
+        string IOriginalActionHandler.Caption { get { return base.Caption; } }
     }
 }

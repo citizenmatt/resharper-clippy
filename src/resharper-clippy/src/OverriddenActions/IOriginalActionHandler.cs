@@ -17,5 +17,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         bool IsEnabled(IDataContext context, TWorkflow workflow);
         void Execute(IDataContext context, TWorkflow workflow);
         bool ShowMenuWithOneItem { get; }
+        string Caption { get; }
     }
 }
