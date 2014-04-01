@@ -3,12 +3,12 @@
   <metadata>
     <id>resharper-clippy</id>
     <title>Clippy for ReSharper</title>
-    <version>0.1-beta-20140331</version>
+    <version>1.0.0</version>
     <authors>Matt Ellis</authors>
     <owners>Matt Ellis</owners>
     <description>A digital assistant to help you with all your ReSharper needs!</description>
-    <projectUrl>http://jetbrains.com/resharper</projectUrl>
-    <licenseUrl>https://xunitcontrib.codeplex.com/license</licenseUrl>
+    <projectUrl>http://github.com/citizenmatt/resharper-clippy</projectUrl>
+    <iconUrl>http://raw.github.com/citizenmatt/resharper-clippy/master/icon.png</iconUrl>
     <copyright>Copyright 2014 Matt Ellis</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
