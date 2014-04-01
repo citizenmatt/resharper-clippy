@@ -79,6 +79,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Do(c => c.Play(lifetime, animation));
         }
 
+        public void StopAllAnimations()
+        {
+            Do(c => c.StopAllAnimations());
+        }
+
         public void ShowBalloon(Lifetime lifetime, string header, string message, IList<BalloonOption> options,
             IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {

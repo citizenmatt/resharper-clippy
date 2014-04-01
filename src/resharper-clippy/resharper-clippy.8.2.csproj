@@ -106,6 +106,7 @@
     <Compile Include="src\OverridingActionRegistrar.cs" />
     <Compile Include="src\OverriddenActions\GotoRecentFilesAction.cs" />
     <Compile Include="src\SolutionVisibilityScope.cs" />
+    <Compile Include="src\UnitTestAnimations.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DoubleAgent.sxs.manifest">
