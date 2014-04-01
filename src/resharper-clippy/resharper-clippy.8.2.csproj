@@ -94,6 +94,7 @@
     <Compile Include="src\AgentClickHandler.cs" />
     <Compile Include="src\AltEnterHandler.cs" />
     <Compile Include="src\BuildAnimations.cs" />
+    <Compile Include="src\ClippySettings.cs" />
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />

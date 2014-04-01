@@ -16,15 +16,17 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     {
         private readonly Lifetime lifetime;
         private readonly IMainWindow mainWindow;
+        private readonly ClippySettingsStore settingsStore;
         private readonly FileSystemPath agentLocation;
         private readonly IDictionary<string, ICharacterEvents> events;
         private readonly IDictionary<int, ICharacterEvents> requests;
         private Control agentControl;
 
-        public AgentManager(Lifetime lifetime, IMainWindow mainWindow)
+        public AgentManager(Lifetime lifetime, IMainWindow mainWindow, ClippySettingsStore settingsStore)
         {
             this.lifetime = lifetime;
             this.mainWindow = mainWindow;
+            this.settingsStore = settingsStore;
             agentLocation = FileSystemPath.Parse(GetType().Assembly.Location).Directory;
             events = new Dictionary<string, ICharacterEvents>();
             requests = new Dictionary<int, ICharacterEvents>();
@@ -139,7 +141,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             agentControl.Characters.Load(characterName, characterName + ".acs");
             var character = agentControl.Characters.Character(characterName);
 
-            var agent = new AgentCharacter(lifetime, character, this, mainWindow);
+            var settings = settingsStore.GetSettings();
+            character.SoundEffectsEnabled = settings.SoundEffects;
+
+            var agent = new AgentCharacter(lifetime, character, this, mainWindow, settingsStore);
             events.Add(characterName, agent);
             return agent;
         }

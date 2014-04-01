@@ -12,16 +12,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     {
         private readonly AgentManager agentManager;
         private readonly IWin32Window owner;
+        private readonly ClippySettingsStore settingsStore;
         private readonly BalloonManager balloon;
         private readonly IWin32Window characterWindow;
         private readonly IDictionary<int, Action> requestHandlers;
         private readonly Random random;
         private Action initLocation;
 
-        public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager, IWin32Window owner)
+        public AgentCharacter(Lifetime lifetime, Character character, AgentManager agentManager,
+            IWin32Window owner, ClippySettingsStore settingsStore)
         {
             this.agentManager = agentManager;
             this.owner = owner;
+            this.settingsStore = settingsStore;
             Character = character;
             ScaleCharacterForDpi();
 
@@ -268,7 +271,23 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 var menuStrip = new ContextMenuStrip();
                 menuStrip.Items.Add("Hide", null, (_, __) => Hide());
                 menuStrip.Items.Add("Animate", null, (_, __) => PlayRandom());
+                menuStrip.Items.Add("-");
+                var soundEffectsMenuItem = new ToolStripMenuItem
+                {
+                    CheckOnClick = true,
+                    Checked = Character.SoundEffectsEnabled,
+                    Text = "Sound Effects"
+                };
+                soundEffectsMenuItem.Click += 
+                    (sender, args) => Character.SoundEffectsEnabled = soundEffectsMenuItem.Checked;
+                menuStrip.Items.Add(soundEffectsMenuItem);
                 menuStrip.Show(x, y);
+                menuStrip.Closed += (sender, args) =>
+                {
+                    var settings = settingsStore.GetSettings();
+                    settings.SoundEffects = soundEffectsMenuItem.Checked;
+                    settingsStore.SetSettings(settings);
+                };
             }
         }
 
