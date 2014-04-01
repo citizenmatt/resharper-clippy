@@ -85,6 +85,7 @@
     <Compile Include="src\AgentApi\IUntypedSignalEx.cs" />
     <Compile Include="src\AgentApi\IWin32WindowEx.cs" />
     <Compile Include="src\AgentApi\OleWin32Window.cs" />
+    <Compile Include="src\SaveAnimations.cs" />
     <Compile Include="src\AgentClickHandler.cs" />
     <Compile Include="src\AltEnterHandler.cs" />
     <Compile Include="src\AgentApi\ICharacterEvents.cs" />

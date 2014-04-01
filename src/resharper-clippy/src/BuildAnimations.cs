@@ -30,6 +30,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             var events = dte.Events;
             if (events == null)
                 return;
+
             var buildEvents = events.BuildEvents;
             if (buildEvents == null)
                 return;
