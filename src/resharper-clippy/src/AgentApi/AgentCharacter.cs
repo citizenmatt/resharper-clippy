@@ -200,8 +200,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         public void ShowBalloon(Lifetime clientLifetime, string header, string message,
             IList<BalloonOption> options, IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
-            // Stop all animations, should stop the idle animation when we're doing something
-            StopAllAnimations();
+            // StopAllAnimations doesn't seem to reset the automatic idle animation.
+            // Showing the real balloon does, but we're a fake balloon. Kick of the 
+            // normal idle animation while we show the balloon, just so the agent isn't
+            // snoozing
+            if (Character.IdleState)
+                Play("Idle1_1");
 
             if (!Character.Visible)
                 Show();
