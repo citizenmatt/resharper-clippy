@@ -39,15 +39,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
         // Oooh. That's messy.
 
-        bool IExecutableAction.Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
-        {
-            return base.Update(context, presentation, () =>
-            {
-                var b = nextUpdate();
-                return b;
-            });
-        }
-
         void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
         {
             actionHelper.Execute(dataContext, nextExecute);

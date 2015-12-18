@@ -198,6 +198,7 @@
     <Compile Include="src\HighlightingTracker.cs" />
     <Compile Include="src\InplaceRefactoringHandler.cs" />
     <Compile Include="src\InplaceRefactoringsHighlightingManagerWrapper.cs" />
+    <Compile Include="src\OverriddenActions\InspectThisAction.cs" />
     <Compile Include="src\OverriddenActions\AgentExtensibleAction.cs" />
     <Compile Include="src\OverriddenActions\FileTemplatesGenerateAction.cs" />
     <Compile Include="src\OverriddenActions\GenerateAction.cs" />

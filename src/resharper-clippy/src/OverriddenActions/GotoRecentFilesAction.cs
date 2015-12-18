@@ -159,7 +159,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                     agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());
                 });
         }
-        // ReSharper restore ConvertToLambdaExpression
 
         private static IOccurence GetOccurence(FileLocationInfo location, bool bindToPsi)
         {

@@ -7,6 +7,7 @@ using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Feature.Services.Occurences;
 using JetBrains.ReSharper.Features.Navigation.Core.RecentFiles;
 using JetBrains.ReSharper.Psi.Files;
+using JetBrains.Threading;
 using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.ActionsRevised.Handlers;
 using JetBrains.UI.PopupWindowManager;
@@ -19,7 +20,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     public class OverridingActionRegistrar
     {
         public OverridingActionRegistrar(Lifetime lifetime, Agent agent, ISolution solution,
-            IShellLocks shellLocks, IActionManager actionManager,
+            IShellLocks shellLocks, IActionManager actionManager, IThreading threading,
             IPsiFiles psiFiles, RecentFilesTracker tracker, OccurencePresentationManager presentationManager,
             MainWindowPopupWindowContext mainWindowPopupWindowContext)
         {
@@ -31,6 +32,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 new GenerateAction(lifetime, agent, actionManager));
             RegisterHandler(actionManager, "GenerateFileBesides", lifetime, 
                 new FileTemplatesGenerateAction(lifetime, agent, actionManager));
+            RegisterHandler(actionManager, "InspectThis", lifetime,
+                new InspectThisAction(lifetime, agent, actionManager, threading));
 
             RegisterHandler(actionManager, "GotoRecentFiles", lifetime,
                 new GotoRecentFilesAction(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, mainWindowPopupWindowContext));

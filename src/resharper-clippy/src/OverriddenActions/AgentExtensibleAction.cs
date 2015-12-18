@@ -10,7 +10,6 @@ using JetBrains.Metadata.Reader.API;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.DataContext;
 using JetBrains.ReSharper.Feature.Services.ActionsMenu;
-using JetBrains.ReSharper.Feature.Services.Util;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.UI.ActionSystem.ActionManager;
@@ -81,7 +80,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
                     handler.Execute(extendedContext, toExecute.Single().First);
                     dataContextLifetimeDefinition.Terminate();
-                };
+                }
             }
         }
 
