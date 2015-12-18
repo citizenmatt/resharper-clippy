@@ -18,8 +18,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         private readonly ISettingsStore settingsStore;
         private readonly DataContexts dataContexts;
 
-        public ClippySettingsStore(ISettingsStore settingsStore,
-            DataContexts dataContexts)
+        public ClippySettingsStore(ISettingsStore settingsStore, DataContexts dataContexts)
         {
             this.settingsStore = settingsStore;
             this.dataContexts = dataContexts;

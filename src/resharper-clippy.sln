@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHarness", "TestHarness\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "resharper-clippy.8.2", "resharper-clippy\resharper-clippy.8.2.csproj", "{1E1AFCFF-452E-4E82-8446-3510D9589EEE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93260EE6-6E78-49C6-BF55-BF41DB4D130B}"
+	ProjectSection(SolutionItems) = preProject
+		..\install\resharper-clippy.nuspec = ..\install\resharper-clippy.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

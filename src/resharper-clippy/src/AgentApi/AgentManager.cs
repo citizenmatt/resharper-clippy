@@ -141,8 +141,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             agentControl.Characters.Load(characterName, characterName + ".acs");
             var character = agentControl.Characters.Character(characterName);
 
-            var settings = settingsStore.GetSettings();
-            character.SoundEffectsEnabled = settings.SoundEffects;
+            // Will only be null with TestHarness
+            if (settingsStore != null)
+            {
+                var settings = settingsStore.GetSettings();
+                character.SoundEffectsEnabled = settings.SoundEffects;
+            }
 
             var agent = new AgentCharacter(lifetime, character, this, mainWindow, settingsStore);
             events.Add(characterName, agent);

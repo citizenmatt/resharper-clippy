@@ -284,6 +284,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 menuStrip.Show(x, y);
                 menuStrip.Closed += (sender, args) =>
                 {
+                    // TODO: Add settings support to TestHarness
+                    if (settingsStore == null)
+                        return;
                     var settings = settingsStore.GetSettings();
                     settings.SoundEffects = soundEffectsMenuItem.Checked;
                     settingsStore.SetSettings(settings);

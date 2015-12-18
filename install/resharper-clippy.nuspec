@@ -7,7 +7,7 @@
     <authors>Matt Ellis</authors>
     <owners>Matt Ellis</owners>
     <description>A digital assistant to help you with all your ReSharper needs!</description>
-    <releaseNotes>&#8226; Sounds effects can be disabled by right clicking the character</releaseNotes>
+    <releaseNotes>&#8226; Sound effects can be disabled by right clicking the character</releaseNotes>
     <projectUrl>http://github.com/citizenmatt/resharper-clippy</projectUrl>
     <iconUrl>http://raw.github.com/citizenmatt/resharper-clippy/master/icon.png</iconUrl>
     <copyright>Copyright 2014 Matt Ellis</copyright>

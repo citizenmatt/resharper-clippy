@@ -4,7 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Interop;
+using CitizenMatt.ReSharper.Plugins.Clippy;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
+using JetBrains.Application.Settings.Store.Implementation;
 using JetBrains.DataFlow;
 using JetBrains.UI.Application;
 using JetBrains.Util;
@@ -34,7 +36,7 @@ namespace TestHarness
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var agentManager = new AgentManager(lifetime, this);
+            var agentManager = new AgentManager(lifetime, this, null);
             agentManager.Initialise();
 
             // Note, using this lifetime means we get alerts for ALL balloons,
