@@ -8,7 +8,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
     public interface IOriginalActionHandler<TWorkflowProvider, TWorkflow, TActionGroup>
         where TWorkflowProvider : class, IWorkflowProvider<TWorkflow, TActionGroup>
         where TWorkflow : IWorkflow<TActionGroup>
-        where TActionGroup : ActionGroup
+        where TActionGroup : ExtensibleActionGroup
     {
         ICollection<TWorkflowProvider> GetWorkflowProviders();
         int CompareWorkflowItems(Pair<TWorkflow, TWorkflowProvider> item1,

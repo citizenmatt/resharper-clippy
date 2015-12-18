@@ -4,24 +4,25 @@ using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Feature.Services.Generate.Actions;
+using JetBrains.UI.ActionsRevised;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    using ExtensibleActionHelper = AgentExtensibleAction<IGenerateActionProvider, IGenerateActionWorkflow, GenerateActionGroup>;
-    using IOriginalActionHandler = IOriginalActionHandler<IGenerateActionProvider, IGenerateActionWorkflow, GenerateActionGroup>;
+    using ExtensibleActionHelper = AgentExtensibleAction<IGenerateWorkflowProvider, IGenerateActionWorkflow, GenerateActionGroup>;
+    using IOriginalActionHandler = IOriginalActionHandler<IGenerateWorkflowProvider, IGenerateActionWorkflow, GenerateActionGroup>;
 
-    public class GenerateAction : GenerateActionBase<IGenerateActionProvider>,
-        IActionHandler, IOriginalActionHandler
+    public class GenerateAction : GenerateActionBase<IGenerateWorkflowProvider>,
+        IExecutableAction, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
 
-        public GenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public GenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager)
         {
-            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
+            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
-        void IActionHandler.Execute(IDataContext dataContext, DelegateExecute nextExecute)
+        void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
         {
             actionHelper.Execute(dataContext, nextExecute);
         }
@@ -32,12 +33,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
 
 
-        ICollection<IGenerateActionProvider> IOriginalActionHandler.GetWorkflowProviders()
+        ICollection<IGenerateWorkflowProvider> IOriginalActionHandler.GetWorkflowProviders()
         {
             return GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, IGenerateActionProvider> item1, Pair<IGenerateActionWorkflow, IGenerateActionProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, IGenerateWorkflowProvider> item1, Pair<IGenerateActionWorkflow, IGenerateWorkflowProvider> item2)
         {
             return CompareWorkflowItems(item1, item2);
         }

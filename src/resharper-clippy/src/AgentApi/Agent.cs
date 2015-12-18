@@ -8,11 +8,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     [ShellComponent]
     public class Agent
     {
-        private readonly JetBrains.Util.Lazy.Lazy<AgentCharacter> character;
+        private readonly Lazy<AgentCharacter> character;
 
         public Agent(Lifetime lifetime, AgentManager agentManager)
         {
-            character = JetBrains.Util.Lazy.Lazy.Of(() =>
+            character = JetBrains.Util.Lazy.Of(() =>
             {
                 agentManager.Initialise();
                 var agentCharacter = agentManager.GetAgent("Clippit");
@@ -24,7 +24,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 lifetime.AddAction(() => agentManager.UnloadAgent(agentCharacter));
 
                 return agentCharacter;
-            });
+            }, true);
 
             AgentClicked = new SimpleSignal(lifetime, "Agent::AgentClicked");
             ButtonClicked = new Signal<string>(lifetime, "Agent::ButtonClicked");

@@ -5,6 +5,7 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.ReSharper.Feature.Services.Generate.Actions;
 using JetBrains.ReSharper.LiveTemplates.FileTemplates;
+using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
 using JetBrains.Util;
 
@@ -13,14 +14,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
     using ExtensibleActionHelper = AgentExtensibleAction<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
     using IOriginalActionHandler = IOriginalActionHandler<GenerateFromTemplateItemProvider, IGenerateActionWorkflow, GenerateActionGroup>;
 
-    public class FileTemplatesGenerateAction : GenerateActionBase<GenerateFromTemplateItemProvider>,
-        IActionHandler, IOriginalActionHandler
+    public class FileTemplatesGenerateAction : GenerateActionBase<GenerateFromTemplateItemProvider>, IExecutableAction, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
 
-        public FileTemplatesGenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public FileTemplatesGenerateAction(Lifetime lifetime, Agent agent, IActionManager actionManager)
         {
-            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
+            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
         protected override RichText Caption
@@ -28,17 +28,34 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             get { return "Create File From Template"; }
         }
 
+        protected override ICollection<GenerateFromTemplateItemProvider> GetWorkflowProviders()
+        {
+            return new List<GenerateFromTemplateItemProvider>
+            {
+                new GenerateFromTemplateItemProvider(true)
+            };
+        }
+
 
         // Oooh. That's messy.
 
-        void IActionHandler.Execute(IDataContext dataContext, DelegateExecute nextExecute)
+        bool IExecutableAction.Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
+        {
+            return base.Update(context, presentation, () =>
+            {
+                var b = nextUpdate();
+                return b;
+            });
+        }
+
+        void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
         {
             actionHelper.Execute(dataContext, nextExecute);
         }
 
         ICollection<GenerateFromTemplateItemProvider> IOriginalActionHandler.GetWorkflowProviders()
         {
-            return base.GetWorkflowProviders();
+            return GetWorkflowProviders();
         }
 
         int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item1, Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item2)

@@ -7,21 +7,21 @@ using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
-using JetBrains.ReSharper.Feature.Services.Navigation.Occurences;
-using JetBrains.ReSharper.Feature.Services.Navigation.Search;
+using JetBrains.ProjectModel.DataContext;
 using JetBrains.ReSharper.Feature.Services.Occurences;
-using JetBrains.ReSharper.Feature.Services.Occurences.Presentation;
-using JetBrains.ReSharper.Features.Environment.RecentFiles;
+using JetBrains.ReSharper.Feature.Services.Util;
+using JetBrains.ReSharper.Features.Navigation.Core.RecentFiles;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Files;
-using JetBrains.ReSharper.Psi.Services;
+using JetBrains.ReSharper.Resources.Shell;
+using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.PopupMenu;
 using JetBrains.UI.PopupWindowManager;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    public class GotoRecentEditsAction : GotoRecentActionBase, IActionHandler
+    public class GotoRecentEditsAction : GotoRecentActionBase, IExecutableAction
     {
         public GotoRecentEditsAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
                                      IPsiFiles psiFiles, RecentFilesTracker tracker,
@@ -33,7 +33,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
         public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
         {
-            return nextUpdate();
+            return context.CheckAllNotNull(ProjectModelDataConstants.SOLUTION);
         }
 
         public void Execute(IDataContext context, DelegateExecute nextExecute)
@@ -46,7 +46,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
     }
 
-    public class GotoRecentFilesAction : GotoRecentActionBase, IActionHandler
+    public class GotoRecentFilesAction : GotoRecentActionBase, IExecutableAction
     {
         public GotoRecentFilesAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
                                      IPsiFiles psiFiles, RecentFilesTracker tracker,
@@ -58,7 +58,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
         public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
         {
-            return nextUpdate();
+            // We can't call nextUpdate, as that means Execute never gets called
+            return context.CheckAllNotNull(ProjectModelDataConstants.SOLUTION);
         }
 
         public void Execute(IDataContext context, DelegateExecute nextExecute)
@@ -103,7 +104,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
 
 
-        // ReSharper disable ConvertToLambdaExpression
         protected void ShowLocations(IList<FileLocationInfo> locations, FileLocationInfo currentLocation, string caption, bool bindToPsi)
         {
             var lifetimeDefinition = Lifetimes.Define(lifetime);
@@ -185,7 +185,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
             //project file can loose its owner project (i.e. micsFilesProject) during provision tab navigation
             if (projectFile.GetProject() == null)
-                return new DecompiledFileOccurence(location.FileSystemPath, new TextRange(location.CaretOffset), location.CachedPresentation);
+                return new DecompiledFileOccurence(location.FileSystemPath, new TextRange(location.CaretOffset), location.CachedPresentation, projectFile.GetSolution());
 
             if (projectFile.IsValid())
                 return new ProjectItemOccurence(projectFile, new OccurencePresentationOptions { ContainerStyle = ContainerDisplayStyle.NoContainer });

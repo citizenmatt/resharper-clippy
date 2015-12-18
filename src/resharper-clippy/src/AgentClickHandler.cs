@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
 using JetBrains.Application;
 using JetBrains.DataFlow;
 using JetBrains.Threading;
+using JetBrains.UI.ActionsRevised.Handlers;
+using JetBrains.UI.ActionSystem.ActionManager;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -13,14 +14,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     public class AgentClickHandler
     {
         private readonly IActionManager actionManager;
-        private readonly IShortcutManager shortcutManager;
         private readonly IThreading threading;
 
         public AgentClickHandler(Lifetime lifetime, Agent agent,
-            IActionManager actionManager, IShortcutManager shortcutManager, IThreading threading)
+            IActionManager actionManager, IThreading threading)
         {
             this.actionManager = actionManager;
-            this.shortcutManager = shortcutManager;
             this.threading = threading;
 
             var buttons = new List<string>
@@ -29,7 +28,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 "Done"
             };
 
-            // ReSharper disable ConvertToLambdaExpression
             agent.AgentClicked.Advise(lifetime, _ =>
             {
                 var lifetimeDefinition = Lifetimes.Define(lifetime);
@@ -54,7 +52,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                         });
                     });
             });
-            // ReSharper restore ConvertToLambdaExpression
         }
 
         private List<BalloonOption> GetOptions()
@@ -80,21 +77,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         private void AddAction(ICollection<BalloonOption> options, string actionId)
         {
-            var action = actionManager.GetExecutableAction(actionId);
-            if (action == null || !actionManager.UpdateAction(action))
+            var action = actionManager.Defs.TryGetActionDefById(actionId);
+            if (action == null || !actionManager.Handlers.StaticEvaluate(action).IsAvailable)
                 return;
 
-            var shortcutText = string.Empty;
+            var shortcutText = action.GetPresentableShortcutText(actionManager.Shortcuts);
+            if (!string.IsNullOrEmpty(shortcutText))
+                shortcutText = string.Format(" ({0})", shortcutText);
 
-            var shortcuts = shortcutManager.GetShortcutsWithScopes(action);
-            if (shortcuts.Any())
-            {
-                var keyboardShortcuts = shortcuts[0].First.KeyboardShortcuts;
-                if (keyboardShortcuts.Any())
-                    shortcutText = string.Format(" ({0})", keyboardShortcuts[0]);
-            }
-
-            options.Add(new BalloonOption(action.Presentation.Text + shortcutText, action));
+            options.Add(new BalloonOption(action.Text + shortcutText, actionId));
         }
 
         private void ExecuteOption(object tag)
@@ -103,10 +94,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             if (action != null)
                 action();
 
-            var executableAction = tag as IExecutableAction;
-            if (executableAction != null)
-                ExecuteAction(executableAction);
-
             var actionId = tag as string;
             if (actionId != null)
                 ExecuteAction(actionId);
@@ -114,15 +101,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         private void ExecuteAction(string actionId)
         {
-            var action = actionManager.GetExecutableAction(actionId);
+            var action = actionManager.Defs.TryGetActionDefById(actionId);
             if (action != null)
-                ExecuteAction(action);
-        }
-
-        private void ExecuteAction(IExecutableAction action)
-        {
-            threading.ReentrancyGuard.ExecuteOrQueue(EternalLifetime.Instance, "AgentAction",
-                () => actionManager.ExecuteActionIfAvailable(action));
+            {
+                threading.ReentrancyGuard.ExecuteOrQueue("Agent::ClickAction", () => action.EvaluateAndExecute(actionManager));
+            }
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.Application;
 using JetBrains.DataFlow;
 using JetBrains.ProjectModel;
+using JetBrains.ReSharper.Resources.Shell;
+using JetBrains.ReSharper.UnitTestExplorer.Session;
+using JetBrains.ReSharper.UnitTestExplorer.Session.ViewModels;
 using JetBrains.ReSharper.UnitTestFramework;
 using JetBrains.Threading;
 
@@ -16,15 +18,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         private readonly Agent agent;
         private readonly IThreading threading;
 
-        public UnitTestAnimations(Lifetime lifetime, IUnitTestSessionManager sessionManager,
+        public UnitTestAnimations(Lifetime lifetime, IUnitTestSessionConductor sessionConductor,
             IUnitTestResultManager resultsManager, Agent agent, IThreading threading)
         {
             this.resultsManager = resultsManager;
             this.agent = agent;
             this.threading = threading;
-            var testSessionLifetimes = new Dictionary<IUnitTestSessionView, LifetimeDefinition>();
+            var testSessionLifetimes = new Dictionary<IUnitTestSessionTreeViewModel, LifetimeDefinition>();
 
-            sessionManager.SessionCreated.Advise(lifetime, sessionView =>
+            sessionConductor.SessionOpened.Advise(lifetime, sessionView =>
             {
                 var sessionLifetimeDefinition = Lifetimes.Define(lifetime, "Clippy::TestSession");
                 testSessionLifetimes.Add(sessionView, sessionLifetimeDefinition);
@@ -32,7 +34,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 SubscribeToSessionLaunch(sessionLifetimeDefinition.Lifetime, sessionView.Session);
             });
 
-            sessionManager.SessionClosed.Advise(lifetime, sessionView =>
+            sessionConductor.SessionClosed.Advise(lifetime, sessionView =>
             {
                 LifetimeDefinition sessionLifetimeDefinition;
                 if (testSessionLifetimes.TryGetValue(sessionView, out sessionLifetimeDefinition))
@@ -92,7 +94,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                                     var animation = "Congratulate";
                                     ReadLockCookie.GuardedExecute(() =>
                                     {
-                                        var results = resultsManager.GetResults(session.Elements);
+                                        var results = resultsManager.GetResults(session.Elements, session);
                                         bool success;
                                         message = GetStatusMessage(results, out success);
                                         if (!success)
@@ -154,25 +156,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                     continue;
 
                 if (pair.Key.Children.Count == 0 || countContainers)
-                    switch (pair.Value.Status)
-                    {
-                        case UnitTestStatus.Unknown:
-                            break;
-                        case UnitTestStatus.Success:
-                            successCount++;
-                            break;
-                        case UnitTestStatus.Failed:
-                            failCount++;
-                            break;
-                        case UnitTestStatus.Ignored:
-                            ignoreCount++;
-                            break;
-                        case UnitTestStatus.Aborted:
-                            break;
-                        case UnitTestStatus.Inconclusive:
-                            inconclusiveCount++;
-                            break;
-                    }
+                {
+                    if (pair.Value.Status.Has(UnitTestStatus.Success))
+                        successCount++;
+                    else if (pair.Value.Status.Has(UnitTestStatus.Failed))
+                        failCount++;
+                    else if (pair.Value.Status.Has(UnitTestStatus.Ignored))
+                        ignoreCount++;
+                    else if (pair.Value.Status.Has(UnitTestStatus.Inconclusive))
+                        inconclusiveCount++;
+                }
             }
         }
     }

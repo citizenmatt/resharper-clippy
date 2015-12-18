@@ -2,10 +2,10 @@
 using System.Linq.Expressions;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
+using JetBrains.ReSharper.Feature.Services.Refactorings;
 using JetBrains.ReSharper.InplaceRefactorings;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Files;
-using JetBrains.ReSharper.Refactorings.Workflow;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -46,6 +46,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         {
             if (GetRefactoringAvailable == null)
                 return InplaceRefactoringInfo.None;
+
+            // TODO: This might be expensive. Is this the best place?
+            solution.GetPsiServices().Files.CommitAllDocuments();
 
             using(CommitCookie.Commit(solution))
             {

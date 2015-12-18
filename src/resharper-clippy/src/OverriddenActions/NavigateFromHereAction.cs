@@ -3,8 +3,8 @@ using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
-using JetBrains.ReSharper.Feature.Services.ContextNavigation;
-using JetBrains.ReSharper.Features.Finding.NavigateFromHere;
+using JetBrains.ReSharper.Feature.Services.Navigation.ContextNavigation;
+using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
 using JetBrains.Util;
 
@@ -14,16 +14,16 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
     using IOriginalActionHandler = IOriginalActionHandler<INavigateFromHereProvider, ContextNavigation, NavigationActionGroup>;
 
     public class NavigateFromHereAction : ContextNavigationActionBase<INavigateFromHereProvider>,
-        IActionHandler, IOriginalActionHandler
+        IExecutableAction, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
 
-        public NavigateFromHereAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public NavigateFromHereAction(Lifetime lifetime, Agent agent, IActionManager actionManager)
         {
-            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
+            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
-        void IActionHandler.Execute(IDataContext dataContext, DelegateExecute nextExecute)
+        void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
         {
             actionHelper.Execute(dataContext, nextExecute);
         }

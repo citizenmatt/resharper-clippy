@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.Application;
 using JetBrains.DataFlow;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
 using JetBrains.TextControl;
 using JetBrains.TextControl.DocumentMarkup;
-using JetBrains.Threading;
-using JetBrains.Util;
-using JetBrains.Util.dataStructures;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -29,7 +23,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             {
                 var markupModel = markupManager.GetMarkupModel(textControl.Document);
 
-                // ReSharper disable ConvertToLambdaExpression
                 Action<DocumentMarkupModifiedEventArgs> onChanged = args =>
                 {
                     Lifetimes.Using(l =>
@@ -40,7 +33,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                         });
                     });
                 };
-                // ReSharper restore ConvertToLambdaExpression
 
                 markupModel.Changed += onChanged;
                 textControlLifetime.AddAction(() => markupModel.Changed -= onChanged);

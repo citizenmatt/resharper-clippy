@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
-using JetBrains.Application;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
 using JetBrains.DocumentModel;
 using JetBrains.ProjectModel;
-using JetBrains.ReSharper.Refactorings.Workflow;
+using JetBrains.ProjectModel.DataContext;
+using JetBrains.ReSharper.Feature.Services.Refactorings;
+using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.TextControl.DocumentMarkup;
 using JetBrains.Threading;
-using DataConstants = JetBrains.ProjectModel.DataContext.DataConstants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -160,7 +160,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                     break;
             }
 
-            // ReSharper disable ConvertToLambdaExpression
             Action applyRefactoringAction = () =>
             {
                 ReadLockCookie.GuardedExecute(() =>
@@ -169,7 +168,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                     {
                         // I think this will fail if the cursor moves out of the refactoring range
                         var dataRules = DataRules.AddRule("DoInplaceRefactoringContextActionBase",
-                            DataConstants.SOLUTION, solution);
+                            ProjectModelDataConstants.SOLUTION, solution);
                         var dataContext = actionManager.DataContexts.CreateOnSelection(l, dataRules);
                         RefactoringActionUtil.ExecuteRefactoring(dataContext,
                             refactoringInfo.CreateRefactoringWorkflow());

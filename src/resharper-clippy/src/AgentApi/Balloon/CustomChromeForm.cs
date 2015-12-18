@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using JetBrains.Interop.WinApi;
+using JetBrains.Interop.WinApi.Constants;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 {
@@ -67,7 +68,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             }
             finally
             {
-                Win32Declarations.ReleaseDC(message.HWnd, hdc);
+                ReleaseDC(message.HWnd, hdc);
             }
         }
 
@@ -87,5 +88,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 
         [DllImport("USER32.dll")]
         private static extern IntPtr GetWindowDC(IntPtr hwnd);
+
+        [DllImport("USER32.dll")]
+        private static extern IntPtr ReleaseDC(IntPtr hWnd, IntPtr hDc);
     }
 }

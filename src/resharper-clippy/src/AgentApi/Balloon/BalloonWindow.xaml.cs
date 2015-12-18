@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using JetBrains.Annotations;
@@ -121,7 +120,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
                 if (value != showPreviousButton)
                 {
                     showPreviousButton = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged("ShowPreviousButton");
                 }
             }
         }
@@ -134,7 +133,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
                 if (value != showNextButton)
                 {
                     showNextButton = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged("ShowNextButton");
                 }
             }
         }
@@ -183,7 +182,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged(string propertyName)
         {
             var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));

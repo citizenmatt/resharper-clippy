@@ -5,7 +5,9 @@ using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.Application;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
+using JetBrains.ReSharper.Feature.Services.Intentions;
 using JetBrains.ReSharper.Intentions.Bulbs;
+using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.UI.BulbMenu;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
@@ -45,7 +47,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             {
                 agent.BalloonOptionClicked.Advise(balloonLifetime, o =>
                 {
-                    // ReSharper disable once ConvertToLambdaExpression
                     ReadLockCookie.GuardedExecute(() =>
                     {
                         lifetimeDefinition.Terminate();
@@ -97,7 +98,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
                 var requiresSeparator = !Equals(bulbAction.GroupingAnchor, groupingAnchor);
                 groupingAnchor = bulbAction.GroupingAnchor;
-                options.Add(new BalloonOption(bulbAction.RichText.ToString(), requiresSeparator, enabled, bulbAction));
+                options.Add(new BalloonOption(bulbAction.RichText.Text, requiresSeparator, enabled, bulbAction));
 
                 PopulateBalloonOptions(options, bulbAction.Subitems);
             }

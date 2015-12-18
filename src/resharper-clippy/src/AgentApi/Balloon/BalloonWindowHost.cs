@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
-using JetBrains.Interop.WinApi;
+using JetBrains.Interop.WinApi.Constants;
 using Key = System.Windows.Input.Key;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;

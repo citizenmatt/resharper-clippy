@@ -1,9 +1,9 @@
 ﻿using System;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using EnvDTE;
-using JetBrains.Application;
 using JetBrains.DataFlow;
 using JetBrains.ProjectModel;
+using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.Threading;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy

@@ -3,8 +3,9 @@ using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
 using JetBrains.DataFlow;
-using JetBrains.ReSharper.Refactorings.Workflow;
+using JetBrains.ReSharper.Feature.Services.Refactorings;
 using JetBrains.ReSharper.Refactorings.WorkflowNew;
+using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
 using JetBrains.Util;
 
@@ -14,13 +15,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
     using IOriginalActionHandler = IOriginalActionHandler<IRefactoringWorkflowProvider, IRefactoringWorkflow, RefactoringActionGroup>;
 
     public class RefactorThisAction : IntroduceWithOccurencesAction<IRefactoringWorkflowProvider>,
-        IActionHandler, IOriginalActionHandler
+        IExecutableAction, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
 
-        public RefactorThisAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IShortcutManager shortcutManager)
+        public RefactorThisAction(Lifetime lifetime, Agent agent, IActionManager actionManager)
         {
-            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager, shortcutManager);
+            actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
         protected override RichText Caption
@@ -29,7 +30,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         }
 
 
-        void IActionHandler.Execute(IDataContext dataContext, DelegateExecute nextExecute)
+        void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
         {
             actionHelper.Execute(dataContext, nextExecute);
         }
