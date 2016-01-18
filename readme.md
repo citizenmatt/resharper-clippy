@@ -6,11 +6,12 @@ Clippy. That's what.
 
 ![Clippy says "it looks like you're refactoring. Would you like help?"](images/inplace_refactoring.gif)
 
-This is a plugin for ReSharper 8.1 and 8.2 to add Clippy support to your day to day ReSharper activities. It's fully operational. It handles/takes over:
+This is a plugin for ReSharper to add Clippy support to your day to day ReSharper activities. It's fully operational. It handles/takes over:
 
 * Alt+Enter
 * Navigate To shortcut
 * Refactor This shortcut
+* Inspect This shortcut
 * Generate (class, ctor, equality, etc) and Generate From Template shortcuts
 * Go to recent files and go to recent edits
 * In place refactoring, such as renaming a variable or class (my favourite)
@@ -31,4 +32,4 @@ For more information, [see the original blog post](http://blog.jetbrains.com/dot
 
 This extension uses the open source [Double Agent](http://doubleagent.sourceforge.net/) library to host the Agent. Some minor changes were made for the binary that is shipped - patches are included in the repo. It also does some nice side-by-side activation context to load an unregistered COM object. Thanks to [Samuel Jack](http://blog.functionalfun.net/2012/09/a-quick-guide-to-registration-free-com.html), [Spike McLarty](http://www.atalasoft.com/blogs/spikemclarty/february-2012/dynamically-testing-an-activex-control-from-c-and) and [Junfeng Zhang](http://blogs.msdn.com/b/junfeng/archive/2006/04/20/579748.aspx) for notes on getting that working. See the [src/resharper-clippy/readme.md](src/resharper-clippy/readme.md) for more details. 
 
-It also uses the ReSharper SDKs for 8.1 and 8.2, which are referenced as NuGet packages. Building the solution will restore the packages, as long as you're on NuGet 2.8 or above. 
+It also uses the ReSharper SDK, which is referenced as NuGet packages.
