@@ -24,6 +24,7 @@ x64/
 build/
 [Bb]in/
 [Oo]bj/
+.vs/
 
 # debug build of the DoubleAgent dlls
 !lib/Debug/
