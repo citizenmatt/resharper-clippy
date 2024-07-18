@@ -1,7 +1,7 @@
 ﻿using JetBrains.Application;
 using JetBrains.Application.DataContext;
 using JetBrains.Application.Settings;
-using JetBrains.UI;
+using JetBrains.Application.UI.Utils;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -13,17 +13,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     }
 
     [ShellComponent]
-    public class ClippySettingsStore
+    public class ClippySettingsStore(ISettingsStore settingsStore, DataContexts dataContexts)
     {
-        private readonly ISettingsStore settingsStore;
-        private readonly DataContexts dataContexts;
-
-        public ClippySettingsStore(ISettingsStore settingsStore, DataContexts dataContexts)
-        {
-            this.settingsStore = settingsStore;
-            this.dataContexts = dataContexts;
-        }
-
         public ClippySettings GetSettings()
         {
             var boundSettings = BindSettingsStore();

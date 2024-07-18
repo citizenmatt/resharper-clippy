@@ -4,8 +4,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
     public class BalloonOption
     {
-        public static readonly object Null = new object();
+        public static readonly object Null = new();
 
+        // TODO: Make RichText?
         public string Text { get; private set; }
         public bool Enabled { get; private set; }
         public object Tag { get; private set; }
@@ -23,13 +24,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public BalloonOption(string text, bool requiresSeparator, bool enabled, object tag)
         {
-            if (tag == null)
-                throw new ArgumentNullException("tag");
-
             Text = text.Replace("&", "_");
             RequiresSeparator = requiresSeparator;
             Enabled = enabled;
-            Tag = tag;
+            Tag = tag ?? throw new ArgumentNullException(nameof(tag));
         }
     }
 }

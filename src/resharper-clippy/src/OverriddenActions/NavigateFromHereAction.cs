@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Lifetimes;
 using JetBrains.ReSharper.Feature.Services.Navigation.ContextNavigation;
-using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
-using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
@@ -28,15 +29,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             actionHelper.Execute(dataContext, nextExecute);
         }
 
-        protected override bool ShowMenuWithOneItem
-        {
-            get { return true; }
-        }
+        protected override bool ShowMenuWithOneItem => true;
 
-        protected override RichText Caption
-        {
-            get { return "Navigate to"; }
-        }
+        protected override RichText Caption => "Navigate to";
 
 
         ICollection<INavigateFromHereProvider> IOriginalActionHandler.GetWorkflowProviders()
@@ -44,7 +39,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             return GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<ContextNavigation, INavigateFromHereProvider> item1, Pair<ContextNavigation, INavigateFromHereProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(ValueTuple<ContextNavigation, INavigateFromHereProvider> item1,
+            ValueTuple<ContextNavigation, INavigateFromHereProvider> item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
@@ -64,11 +60,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             Execute(context, workflow);
         }
 
-        bool IOriginalActionHandler.ShowMenuWithOneItem
-        {
-            get { return ShowMenuWithOneItem; }
-        }
+        bool IOriginalActionHandler.ShowMenuWithOneItem => ShowMenuWithOneItem;
 
-        string IOriginalActionHandler.Caption { get { return Caption; } }
+        RichText IOriginalActionHandler.Caption => Caption;
     }
 }

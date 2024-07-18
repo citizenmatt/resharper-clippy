@@ -16,11 +16,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.SxS
                 lpSource = manifest
             };
 
-            if (context.cbSize != 0x20)
-            {
-                throw new Exception("ACTCTX.cbSize is wrong");
-            }
-
             var hActCtx = UnsafeNativeMethods.CreateActCtx(ref context);
             if (hActCtx == (IntPtr) (-1))
             {
@@ -29,8 +24,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.SxS
 
             try
             {
-                var cookie = IntPtr.Zero;
-                if (!UnsafeNativeMethods.ActivateActCtx(hActCtx, out cookie))
+                if (!UnsafeNativeMethods.ActivateActCtx(hActCtx, out var cookie))
                 {
                     throw new Win32Exception();
                 }
@@ -70,11 +64,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.SxS
             [DllImport("Kernel32.dll", SetLastError = true)]
             internal static extern void ReleaseActCtx(IntPtr hActCtx);
 
-            [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Unicode)]
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             internal struct ACTCTX
             {
-                public Int32 cbSize;
-                public UInt32 dwFlags;
+                public int cbSize;
+                public uint dwFlags;
                 public string lpSource;
                 public UInt16 wProcessorArchitecture;
                 public UInt16 wLangId;

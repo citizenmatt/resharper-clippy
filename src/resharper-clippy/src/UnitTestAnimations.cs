@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
+using JetBrains.Application.Threading;
 using JetBrains.DataFlow;
+using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Resources.Shell;
-using JetBrains.ReSharper.UnitTestExplorer.Session;
-using JetBrains.ReSharper.UnitTestExplorer.Session.ViewModels;
-using JetBrains.ReSharper.UnitTestFramework;
+using JetBrains.ReSharper.UnitTestFramework.Elements;
+using JetBrains.ReSharper.UnitTestFramework.Execution;
+using JetBrains.ReSharper.UnitTestFramework.Execution.Launch;
+using JetBrains.ReSharper.UnitTestFramework.Session;
+using JetBrains.ReSharper.UnitTestFramework.UI.Session;
 using JetBrains.Threading;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
@@ -28,7 +32,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             sessionConductor.SessionOpened.Advise(lifetime, sessionView =>
             {
-                var sessionLifetimeDefinition = Lifetimes.Define(lifetime, "Clippy::TestSession");
+                var sessionLifetimeDefinition = lifetime.CreateNested();
                 testSessionLifetimes.Add(sessionView, sessionLifetimeDefinition);
 
                 SubscribeToSessionLaunch(sessionLifetimeDefinition.Lifetime, sessionView.Session);
@@ -36,8 +40,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             sessionConductor.SessionClosed.Advise(lifetime, sessionView =>
             {
-                LifetimeDefinition sessionLifetimeDefinition;
-                if (testSessionLifetimes.TryGetValue(sessionView, out sessionLifetimeDefinition))
+                if (testSessionLifetimes.TryGetValue(sessionView, out var sessionLifetimeDefinition))
                 {
                     sessionLifetimeDefinition.Terminate();
                     testSessionLifetimes.Remove(sessionView);
@@ -55,14 +58,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 {
                     sequentialLifetimes.Next(launchLifetime =>
                     {
-                        SubscribeToLaunchState(launchLifetime, session, args.New.State);
+                        SubscribeToLaunchState(launchLifetime, session, args.New.StageStatus);
                     });
                 }
             });
         }
 
         private void SubscribeToLaunchState(Lifetime launchLifetime, IUnitTestSession session,
-            IProperty<UnitTestSessionState> state)
+            IProperty<UnitTestLaunchStageStatus> state)
         {
             var aborted = false;
             state.Change.Advise(launchLifetime, stateArgs =>
@@ -71,21 +74,26 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 {
                     switch (stateArgs.New)
                     {
-                        case UnitTestSessionState.Idle:
-                        case UnitTestSessionState.Running:
+                        case UnitTestLaunchStageStatus.None:
+                        case UnitTestLaunchStageStatus.Running:
                             break;
 
-                        case UnitTestSessionState.Building:
+                        case UnitTestLaunchStageStatus.Building:
                             aborted = false;
                             threading.Dispatcher.BeginOrInvoke("Clippy::TestBuilding", () => agent.Play("Processing"));
                             break;
 
-                        case UnitTestSessionState.Starting:
+                        case UnitTestLaunchStageStatus.Starting:
                             if (!aborted)
                                 threading.Dispatcher.BeginOrInvoke("Clippy::TestStarting", () => agent.Play("GetTechy"));
                             break;
 
-                        case UnitTestSessionState.Stopping:
+                        case UnitTestLaunchStageStatus.BuildFailed:
+                            aborted = true;
+                            threading.Dispatcher.BeginOrInvoke("Clippy::TestAborting", () => agent.Play("Wave"));
+                            break;
+
+                        case UnitTestLaunchStageStatus.Finishing:
                             if (!aborted)
                             {
                                 threading.Dispatcher.BeginOrInvoke("Clippy::TestStopping", () =>
@@ -95,13 +103,12 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                                     ReadLockCookie.GuardedExecute(() =>
                                     {
                                         var results = resultsManager.GetResults(session.Elements, session);
-                                        bool success;
-                                        message = GetStatusMessage(results, out success);
+                                        message = GetStatusMessage(results, out var success);
                                         if (!success)
                                             animation = "Wave";
                                     });
 
-                                    var balloonLifetimeDefinition = Lifetimes.Define(launchLifetime);
+                                    var balloonLifetimeDefinition = launchLifetime.CreateNested();
 
                                     agent.ShowBalloon(balloonLifetimeDefinition.Lifetime, "Test run complete",
                                         message, null, new[] { "Done" }, false,
@@ -117,11 +124,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                                 });
                             }
                             break;
-
-                        case UnitTestSessionState.Aborting:
-                            aborted = true;
-                            threading.Dispatcher.BeginOrInvoke("Clippy::TestAborting", () => agent.Play("Wave"));
-                            break;
                     }
                 }
             });
@@ -130,16 +132,17 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         private static string GetStatusMessage(IEnumerable<KeyValuePair<IUnitTestElement, UnitTestResult>> results,
             out bool success)
         {
-            int successCount;
-            int failCount;
-            int ignoreCount;
-            int inconclusiveCount;
-            GetStatusCounts(results, out successCount, out failCount, out ignoreCount, out inconclusiveCount, false);
+            GetStatusCounts(results,
+                out var successCount,
+                out var failCount,
+                out var ignoreCount,
+                out var inconclusiveCount,
+                false);
 
             success = failCount <= 0;
 
-            return string.Format("Tests passed: {0}, failed {1}, ignored {2}, inconclusive {3}", 
-                successCount, failCount, ignoreCount, inconclusiveCount);
+            return
+                $"Tests passed: {successCount}, failed {failCount}, ignored {ignoreCount}, inconclusive {inconclusiveCount}";
         }
 
         private static void GetStatusCounts(IEnumerable<KeyValuePair<IUnitTestElement, UnitTestResult>> results,
@@ -152,9 +155,6 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             foreach (var pair in results)
             {
-                if (!pair.Key.State.IsValid())
-                    continue;
-
                 if (pair.Key.Children.Count == 0 || countContainers)
                 {
                     if (pair.Value.Status.Has(UnitTestStatus.Success))

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using JetBrains.Application.DataContext;
 using JetBrains.ReSharper.Feature.Services.ActionsMenu;
-using JetBrains.Util;
+using JetBrains.UI.RichText;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
@@ -11,12 +11,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         where TActionGroup : ExtensibleActionGroup
     {
         ICollection<TWorkflowProvider> GetWorkflowProviders();
-        int CompareWorkflowItems(Pair<TWorkflow, TWorkflowProvider> item1,
-            Pair<TWorkflow, TWorkflowProvider> item2);
+        int CompareWorkflowItems((TWorkflow, TWorkflowProvider) item1, (TWorkflow, TWorkflowProvider) item2);
         bool IsAvailable(IDataContext context, TWorkflow workflow);
         bool IsEnabled(IDataContext context, TWorkflow workflow);
         void Execute(IDataContext context, TWorkflow workflow);
         bool ShowMenuWithOneItem { get; }
-        string Caption { get; }
+        RichText Caption { get; }
     }
 }

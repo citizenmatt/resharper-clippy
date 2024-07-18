@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Interop;
-using CitizenMatt.ReSharper.Plugins.Clippy;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.Application.Settings.Store.Implementation;
-using JetBrains.DataFlow;
-using JetBrains.UI.Application;
+using JetBrains.Lifetimes;
+using JetBrains.UI.StdApplicationUI;
+using JetBrains.UI.Utils;
+using JetBrains.UI.Wpf;
 using JetBrains.Util;
 using JetBrains.Util.Interop;
 using MessageBox = JetBrains.Util.MessageBox;
 
 namespace TestHarness
 {
-    public partial class MainWindow : IMainWindow
+    public partial class MainWindow
     {
         private static readonly Random Rand = new Random();
 
@@ -28,7 +27,7 @@ namespace TestHarness
         {
             InitializeComponent();
 
-            lifetime = EternalLifetime.Instance;
+            lifetime = Lifetime.Eternal;
             lifetimes = new SequentialLifetimes(lifetime);
 
             Loaded += MainWindow_Loaded;
@@ -36,7 +35,8 @@ namespace TestHarness
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var agentManager = new AgentManager(lifetime, this, null);
+            var agentManager =
+                new AgentManager(lifetime, new StaticMainWindow(lifetime, new WpfWin32Window(this)), null);
             agentManager.Initialise();
 
             // Note, using this lifetime means we get alerts for ALL balloons,
@@ -59,8 +59,9 @@ namespace TestHarness
         {
             if (firstTime)
             {
-                var x = ((Left + Width)*DpiUtil.DpiHorizontalFactor)-200;
-                var y = ((Top + Height)*DpiUtil.DpiVerticalFactor)-200;
+                var dpiResolution = DpiResolutions.FromAvalonElement(this);
+                var x = ((Left + Width)*(dpiResolution.DpiX/DpiResolution.DeviceIndependent96DpiValue))-200;
+                var y = ((Top + Height)*(dpiResolution.DpiY/DpiResolution.DeviceIndependent96DpiValue))-200;
                 agent.SetLocation(x, y);
                 firstTime = false;
             }
@@ -178,7 +179,5 @@ namespace TestHarness
 
             agent.Play(animation);
         }
-
-        public IntPtr Handle { get { return new WindowInteropHelper(this).Handle; } }
     }
 }

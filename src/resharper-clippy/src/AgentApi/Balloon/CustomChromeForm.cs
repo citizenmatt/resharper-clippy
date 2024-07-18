@@ -45,7 +45,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             message.Result = IntPtr.Zero;
 
             var rc = (RECT) Marshal.PtrToStructure(message.LParam, typeof (RECT));
-            rc = OnCalculateNonClientSize(rc);
+            var nonClientSize = OnCalculateNonClientSize(Rectangle.FromLTRB(rc.Left, rc.Top, rc.Right, rc.Bottom));
+            rc = RECT.FromSize(nonClientSize.Left, nonClientSize.Top, nonClientSize.Width, nonClientSize.Height);
             Marshal.StructureToPtr(rc, message.LParam, false);
         }
 

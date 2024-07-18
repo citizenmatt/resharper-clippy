@@ -1,36 +1,38 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
-using JetBrains.Application;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.Threading;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Application.UI.Controls.JetPopupMenu;
+using JetBrains.Application.UI.PopupLayout;
 using JetBrains.DocumentModel;
+using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.DataContext;
-using JetBrains.ReSharper.Feature.Services.Occurences;
+using JetBrains.ReSharper.Feature.Services.Occurrences;
 using JetBrains.ReSharper.Feature.Services.Util;
 using JetBrains.ReSharper.Features.Navigation.Core.RecentFiles;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Files;
 using JetBrains.ReSharper.Resources.Shell;
-using JetBrains.UI.ActionsRevised;
-using JetBrains.UI.PopupMenu;
-using JetBrains.UI.PopupWindowManager;
 using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    public class GotoRecentEditsAction : GotoRecentActionBase, IExecutableAction
+    public class GotoRecentEditsAction(Lifetime lifetime,
+                                       Agent agent,
+                                       ISolution solution,
+                                       IShellLocks shellLocks,
+                                       IPsiFiles psiFiles,
+                                       RecentFilesTracker tracker,
+                                       OccurrencePresentationManager presentationManager,
+                                       ProjectModelElementPointerManager projectModelElementPointerManager,
+                                       IMainWindowPopupWindowContext popupWindowContext)
+        : GotoRecentActionBase(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager,
+            projectModelElementPointerManager, popupWindowContext), IExecutableAction
     {
-        public GotoRecentEditsAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
-                                     IPsiFiles psiFiles, RecentFilesTracker tracker,
-                                     OccurencePresentationManager presentationManager,
-                                     MainWindowPopupWindowContext popupWindowContext)
-            : base(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, popupWindowContext)
-        {
-        }
-
         public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
         {
             return context.CheckAllNotNull(ProjectModelDataConstants.SOLUTION);
@@ -41,21 +43,23 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             using(ReadLockCookie.Create())
             {
                 PsiFiles.CommitAllDocuments();
-                ShowLocations(Tracker.EditLocations, Tracker.CurrentEdit, "Recent Edits", true);
+                ShowLocations(Tracker.GetEditLocations(), Tracker.CurrentEdit, "Recent Edits", true);
             }
         }
     }
 
-    public class GotoRecentFilesAction : GotoRecentActionBase, IExecutableAction
+    public class GotoRecentFilesAction(Lifetime lifetime,
+                                       Agent agent,
+                                       ISolution solution,
+                                       IShellLocks shellLocks,
+                                       IPsiFiles psiFiles,
+                                       RecentFilesTracker tracker,
+                                       OccurrencePresentationManager presentationManager,
+                                       ProjectModelElementPointerManager projectModelElementPointerManager,
+                                       IMainWindowPopupWindowContext popupWindowContext)
+        : GotoRecentActionBase(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager,
+            projectModelElementPointerManager, popupWindowContext), IExecutableAction
     {
-        public GotoRecentFilesAction(Lifetime lifetime, Agent agent, ISolution solution, IShellLocks shellLocks,
-                                     IPsiFiles psiFiles, RecentFilesTracker tracker,
-                                     OccurencePresentationManager presentationManager,
-                                     MainWindowPopupWindowContext popupWindowContext)
-            : base(lifetime, agent, solution, shellLocks, psiFiles, tracker, presentationManager, popupWindowContext)
-        {
-        }
-
         public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
         {
             // We can't call nextUpdate, as that means Execute never gets called
@@ -64,7 +68,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 
         public void Execute(IDataContext context, DelegateExecute nextExecute)
         {
-            ShowLocations(Tracker.FileLocations, Tracker.CurrentFile, "Recent Files", false);
+            ShowLocations(Tracker.GetFileLocations(), Tracker.CurrentFile, "Recent Files", false);
         }
     }
 
@@ -74,45 +78,41 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
         private readonly Agent agent;
         private readonly ISolution solution;
         private readonly IShellLocks shellLocks;
-        private readonly IPsiFiles psiFiles;
-        private readonly RecentFilesTracker tracker;
-        private readonly OccurencePresentationManager presentationManager;
-        private readonly MainWindowPopupWindowContext popupWindowContext;
+        private readonly OccurrencePresentationManager presentationManager;
+        private readonly ProjectModelElementPointerManager projectModelElementPointerManager;
+        private readonly IMainWindowPopupWindowContext popupWindowContext;
 
         protected GotoRecentActionBase(Lifetime lifetime, Agent agent, ISolution solution,
             IShellLocks shellLocks, IPsiFiles psiFiles, RecentFilesTracker tracker,
-            OccurencePresentationManager presentationManager, MainWindowPopupWindowContext popupWindowContext)
+            OccurrencePresentationManager presentationManager,
+            ProjectModelElementPointerManager projectModelElementPointerManager,
+            IMainWindowPopupWindowContext popupWindowContext)
         {
             this.lifetime = lifetime;
             this.agent = agent;
             this.solution = solution;
             this.shellLocks = shellLocks;
-            this.psiFiles = psiFiles;
-            this.tracker = tracker;
+            PsiFiles = psiFiles;
+            Tracker = tracker;
             this.presentationManager = presentationManager;
+            this.projectModelElementPointerManager = projectModelElementPointerManager;
             this.popupWindowContext = popupWindowContext;
         }
 
-        protected RecentFilesTracker Tracker
+        protected RecentFilesTracker Tracker { get; }
+
+        protected IPsiFiles PsiFiles { get; }
+
+
+        protected void ShowLocations(IReadOnlyList<FileLocationInfo> locations, FileLocationInfo currentLocation, string caption, bool bindToPsi)
         {
-            get { return tracker; }
-        }
+            var lifetimeDefinition = lifetime.CreateNested();
 
-        protected IPsiFiles PsiFiles
-        {
-            get { return psiFiles; }
-        }
-
-
-        protected void ShowLocations(IList<FileLocationInfo> locations, FileLocationInfo currentLocation, string caption, bool bindToPsi)
-        {
-            var lifetimeDefinition = Lifetimes.Define(lifetime);
-
-            if (!Enumerable.Any(locations))
+            if (!locations.Any())
             {
-                agent.ShowBalloon(lifetimeDefinition.Lifetime, caption, 
-                    string.Format("There are no {0}.", caption.ToLowerInvariant()), null,
-                    new[] {"OK"}, false, balloonLifetime =>
+                agent.ShowBalloon(lifetimeDefinition.Lifetime, caption,
+                    $"There are no {caption.ToLowerInvariant()}.", null,
+                    ["OK"], false, balloonLifetime =>
                     {
                         agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());
                     });
@@ -120,16 +120,18 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             }
 
             var options = new List<BalloonOption>();
-            foreach (var locationInfo in locations.Distinct().Where(l => l.ProjectFile.IsValid() || l.FileSystemPath != null))
+            foreach (var locationInfo in locations.Distinct().Where(l => l.GetProjectFile(projectModelElementPointerManager)?.IsValid() == true || l.FileSystemPath != null))
             {
                 var descriptor = new SimpleMenuItem();
 
                 var occurence = GetOccurence(locationInfo, bindToPsi);
                 if (occurence != null)
                 {
-                    presentationManager.DescribeOccurence(descriptor, occurence, null);
+                    presentationManager.DescribeOccurrence(descriptor, occurence);
                     var enabled = locationInfo != currentLocation;
-                    options.Add(new BalloonOption(descriptor.Text + string.Format(" ({0})", descriptor.ShortcutText), false, enabled, locationInfo));
+                    options.Add(new BalloonOption(
+                        (descriptor.Text + $" ({descriptor.ShortcutText})").Text, false, enabled,
+                        locationInfo));
                 }
             }
 
@@ -150,8 +152,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                             {
                                 PsiFiles.CommitAllDocuments();
                                 var occurence = GetOccurence(locationInfo, bindToPsi);
-                                if (occurence != null)
-                                    occurence.Navigate(solution, popupWindowContext.Source, true);
+                                occurence?.Navigate(solution, popupWindowContext.Source, true);
                             }
                         });
                     });
@@ -160,34 +161,53 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
                 });
         }
 
-        private static IOccurence GetOccurence(FileLocationInfo location, bool bindToPsi)
+        private IOccurrence GetOccurence(FileLocationInfo location, bool bindToPsi)
         {
-            var projectFile = location.ProjectFile;
+            var projectFile = location.GetProjectFile(projectModelElementPointerManager);
+            if (projectFile == null || projectFile.GetProject() == null)
+            {
+                return new ExternalSourceOccurrence(location.FileSystemPath, new TextRange(location.CaretOffset), location.CachedPresentation, solution);
+            }
 
             if (bindToPsi)
             {
                 var sourceFile = projectFile.ToSourceFile();
                 if (sourceFile != null)
                 {
-                    DeclaredElementEnvoy<INamespace> boundNamespace;
-                    DeclaredElementEnvoy<ITypeElement> boundTypeElement;
-                    DeclaredElementEnvoy<ITypeMember> boundTypeMember;
-                    TextControlToPsi.BindToPsi(sourceFile, new TextRange(location.CaretOffset), out boundTypeMember, out boundTypeElement, out boundNamespace);
+                    var document = sourceFile.Document;
+                    var documentRange = document.DocumentRange;
+                    int offset;
+                    if (documentRange.Contains(location.CaretOffset))
+                    {
+                        offset = location.CaretOffset;
+                    }
+                    else
+                    {
+                        offset = documentRange.EndOffset;
+                    }
+
+                    ContainingMemberManager.GetInstance(sourceFile).BindToPsi(sourceFile, KnownLanguage.ANY,
+                        new TextRange(offset), out var boundTypeMember, out var boundTypeElement, out var _,
+                        PsiLanguageCategories.Dominant);
+                    var options = new OccurrencePresentationOptions { ContainerStyle = ContainerDisplayStyle.File };
                     if (boundTypeMember != null || boundTypeElement != null)
                     {
-                        var declaredElement = ((IDeclaredElementEnvoy)boundTypeMember ?? boundTypeElement).GetValidDeclaredElement();
+                        var declaredElement = (boundTypeMember ?? boundTypeElement).GetValidDeclaredElement();
                         if (declaredElement != null)
-                            return new CustomRangeOccurence(sourceFile, new DocumentRange(sourceFile.Document, new TextRange(location.CaretOffset)), new OccurencePresentationOptions { ContainerStyle = ContainerDisplayStyle.File });
+                        {
+                            return new CustomRangeOccurrence(sourceFile, new DocumentRange(sourceFile.Document, new TextRange(location.CaretOffset)), options);
+                        }
+                    }
+                    else
+                    {
+                        return new CustomRangeOccurrence(sourceFile, new DocumentRange(document, offset), options);
                     }
                 }
             }
 
             //project file can loose its owner project (i.e. micsFilesProject) during provision tab navigation
-            if (projectFile.GetProject() == null)
-                return new DecompiledFileOccurence(location.FileSystemPath, new TextRange(location.CaretOffset), location.CachedPresentation, projectFile.GetSolution());
-
             if (projectFile.IsValid())
-                return new ProjectItemOccurence(projectFile, new OccurencePresentationOptions { ContainerStyle = ContainerDisplayStyle.NoContainer });
+                return new ProjectItemOccurrence(projectFile, new OccurrencePresentationOptions { ContainerStyle = ContainerDisplayStyle.NoContainer });
 
             return null;
         }

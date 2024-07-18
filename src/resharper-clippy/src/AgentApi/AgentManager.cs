@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using DoubleAgent.Control;
 using JetBrains.Application;
-using JetBrains.DataFlow;
-using JetBrains.UI.Application;
+using JetBrains.Application.StdApplicationUI;
+using JetBrains.Lifetimes;
 using JetBrains.Util;
 using ActivationContext = CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.SxS.ActivationContext;
 using Control = DoubleAgent.Control.Control;
@@ -37,7 +37,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             if (agentControl != null)
                 return;
 
-            var manifestLocation = agentLocation.Combine("DoubleAgent.sxs.manifest");
+            var manifestLocation = agentLocation
+                .Combine("DoubleAgent." + (IntPtr.Size == 8 ? "x64" : "x86"))
+                .Combine("DoubleAgent.sxs.manifest");
             agentControl = ActivationContext.Using(manifestLocation.FullPath, () => new Control());
 
             agentControl.AutoConnect = 0;
@@ -148,7 +150,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 character.SoundEffectsEnabled = settings.SoundEffects;
             }
 
-            var agent = new AgentCharacter(lifetime, character, this, mainWindow, settingsStore);
+            var agent = new AgentCharacter(lifetime, character, this, mainWindow.PrimaryWindow.Value, settingsStore);
             events.Add(characterName, agent);
             return agent;
         }

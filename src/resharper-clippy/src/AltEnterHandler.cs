@@ -1,35 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
 using JetBrains.Application;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.UI.Controls.BulbMenu;
+using JetBrains.Application.UI.Controls.BulbMenu.Anchors;
+using JetBrains.Application.UI.Controls.BulbMenu.Keys;
+using JetBrains.Diagnostics;
+using JetBrains.IDE.PerClientComponents;
+using JetBrains.Lifetimes;
+using JetBrains.ProjectModel.DataContext;
 using JetBrains.ReSharper.Feature.Services.Intentions;
 using JetBrains.ReSharper.Intentions.Bulbs;
 using JetBrains.ReSharper.Resources.Shell;
-using JetBrains.UI.BulbMenu;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
     [ShellComponent]
-    public class AltEnterHandler : IAltEnterHandler
+    public class AltEnterHandler(Lifetime lifetime, Agent agent) : IAltEnterHandler
     {
-        private readonly Lifetime lifetime;
-        private readonly Agent agent;
-        private readonly BulbKeysBuilder bulbKeysBuilder;
-
-        public AltEnterHandler(Lifetime lifetime, Agent agent)
-        {
-            this.lifetime = lifetime;
-            this.agent = agent;
-            bulbKeysBuilder = new BulbKeysBuilder();
-        }
-
-        public bool IsAvailable(IDataContext context)
-        {
-            return true;
-        }
+        public bool IsAvailable(IDataContext context) => true;
 
         public bool HandleAction(IDataContext context)
         {
@@ -42,8 +31,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             var buttons = new List<string> {"Cancel"};
 
-            var lifetimeDefinition = Lifetimes.Define(lifetime);
-            Action<Lifetime> init = balloonLifetime =>
+            var lifetimeDefinition = lifetime.CreateNested();
+
+            agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?", string.Empty,
+                options, buttons, true, Init);
+
+            return true;
+
+            void Init(Lifetime balloonLifetime)
             {
                 agent.BalloonOptionClicked.Advise(balloonLifetime, o =>
                 {
@@ -56,31 +51,21 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                 });
 
                 agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());
-            };
-
-            agent.ShowBalloon(lifetimeDefinition.Lifetime, "What do you want to do?", string.Empty,
-                options, buttons, true, init);
-
-            return true;
+            }
         }
 
-        public double Priority { get { return 0; } }
+        public double Priority => 0;
 
         private IEnumerable<BulbActionKey> GetBulbActionKeys(IDataContext context)
         {
-            var bulbItems = context.GetComponent<BulbItems>();
-            if (bulbItems.BulbItemsState.Value == null)
-                return null;
+            var solution = context.GetData(ProjectModelDataConstants.SOLUTION).NotNull();
+            if (solution.GetCurrentClientSession().GetComponent<BulbItems>().BulbItemsState.Value is BulbItemsReadyState readyState)
+            {
+                var keys = BulbKeysBuilder.BuildMenuKeys(readyState.IntentionsBulbItems.CollectAllBulbMenuItems());
+                return keys.Count > 0 ? keys : null;
+            }
 
-            var bulbItemsState = bulbItems.BulbItemsState.Value;
-            if (bulbItemsState.BulbItemsStates == BulbItemsStates.Invalidated)
-                return null;
-
-            if (bulbItemsState.IntentionsBulbItems == null || !bulbItemsState.IntentionsBulbItems.AllBulbMenuItems.Any())
-                return null;
-
-            var bulbActionKeys = bulbKeysBuilder.BuildMenuKeys(bulbItemsState.IntentionsBulbItems.AllBulbMenuItems);
-            return bulbActionKeys;
+            return null;
         }
 
         private void PopulateBalloonOptions(IList<BalloonOption> options, IEnumerable<BulbActionKey> bulbActions)

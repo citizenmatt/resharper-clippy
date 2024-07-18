@@ -1,5 +1,6 @@
 using System;
 using JetBrains.DataFlow;
+using JetBrains.Lifetimes;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
@@ -8,19 +9,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
     {
         public static void FlowInto(this IUntypedSignal source, Lifetime lifetime, IUntypedSignal target)
         {
-            if (lifetime == null)
-                throw new ArgumentNullException("lifetime");
             if (source == null)
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             if (target == null)
-                throw new ArgumentNullException("target");
-            source.Advise(o => target.Fire(o, null), lifetime);
-        }
-
-        // Just to get the args the same way round as ISignal<T>
-        public static void Advise(this IUntypedSignal signal, Lifetime lifetime, Action<object> handler)
-        {
-            signal.Advise(handler, lifetime);
+                throw new ArgumentNullException(nameof(target));
+            source.Advise(lifetime, o => target.Fire(o, null));
         }
     }
 }

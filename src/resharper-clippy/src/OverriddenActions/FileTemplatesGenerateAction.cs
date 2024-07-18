@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Lifetimes;
 using JetBrains.ReSharper.Feature.Services.Generate.Actions;
 using JetBrains.ReSharper.LiveTemplates.FileTemplates;
-using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
-using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
@@ -23,18 +23,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
-        protected override RichText Caption
-        {
-            get { return "Create File From Template"; }
-        }
+        protected override RichText Caption => "Create File From Template";
 
         protected override ICollection<GenerateFromTemplateItemProvider> GetWorkflowProviders()
-        {
-            return new List<GenerateFromTemplateItemProvider>
-            {
-                new GenerateFromTemplateItemProvider(true)
-            };
-        }
+            => new List<GenerateFromTemplateItemProvider> { new(true) };
 
 
         // Oooh. That's messy.
@@ -49,7 +41,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             return GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item1, Pair<IGenerateActionWorkflow, GenerateFromTemplateItemProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(
+            (IGenerateActionWorkflow, GenerateFromTemplateItemProvider) item1,
+            (IGenerateActionWorkflow, GenerateFromTemplateItemProvider) item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
@@ -69,11 +63,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             Execute(context, workflow);
         }
 
-        bool IOriginalActionHandler.ShowMenuWithOneItem
-        {
-            get { return ShowMenuWithOneItem; }
-        }
+        bool IOriginalActionHandler.ShowMenuWithOneItem => ShowMenuWithOneItem;
 
-        string IOriginalActionHandler.Caption { get { return Caption; } }
+        RichText IOriginalActionHandler.Caption => Caption;
     }
 }

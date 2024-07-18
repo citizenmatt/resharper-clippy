@@ -101,14 +101,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         }
     }
 
-    public class InplaceRefactoringInfo
+    public class InplaceRefactoringInfo(
+        Func<object> getRefactoringInfo,
+        InplaceRefactoringType inplaceRefactoringType)
     {
-        public static readonly InplaceRefactoringInfo None = new InplaceRefactoringInfo(null, 
-            InplaceRefactoringType.None);
+        public static readonly InplaceRefactoringInfo None = new(null, InplaceRefactoringType.None);
 
         private static readonly Func<object, IRefactoringWorkflow> CreateRefactoringWorkflowImpl;
-
-        private readonly Func<object> getRefactoringInfo;
 
         static InplaceRefactoringInfo()
         {
@@ -121,14 +120,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             CreateRefactoringWorkflowImpl = Expression.Lambda<Func<object, IRefactoringWorkflow>>(callExpression, refactoringInfoParameter).Compile();
         }
 
-        public InplaceRefactoringInfo(Func<object> getRefactoringInfo,
-            InplaceRefactoringType inplaceRefactoringType)
-        {
-            this.getRefactoringInfo = getRefactoringInfo;
-            Type = inplaceRefactoringType;
-        }
-
-        public InplaceRefactoringType Type { get; private set; }
+        public InplaceRefactoringType Type { get; private set; } = inplaceRefactoringType;
 
         public IRefactoringWorkflow CreateRefactoringWorkflow()
         {

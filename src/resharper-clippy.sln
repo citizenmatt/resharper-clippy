@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93260EE6-6E78-49C6-BF55-BF41DB4D130B}"
 	ProjectSection(SolutionItems) = preProject
 		..\install\resharper-clippy.nuspec = ..\install\resharper-clippy.nuspec
+		runVisualStudio.ps1 = runVisualStudio.ps1
+		settings.ps1 = settings.ps1
 	EndProjectSection
 EndProject
 Global

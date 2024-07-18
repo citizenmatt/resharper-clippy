@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Application;
 using JetBrains.DataFlow;
+using JetBrains.Lifetimes;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
@@ -21,20 +22,17 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 agentCharacter.ButtonClicked.FlowInto(lifetime, ButtonClicked);
                 agentCharacter.BalloonOptionClicked.FlowInto(lifetime, BalloonOptionClicked);
 
-                lifetime.AddAction(() => agentManager.UnloadAgent(agentCharacter));
+                lifetime.OnTermination(() => agentManager.UnloadAgent(agentCharacter));
 
                 return agentCharacter;
             }, true);
 
-            AgentClicked = new SimpleSignal(lifetime, "Agent::AgentClicked");
-            ButtonClicked = new Signal<string>(lifetime, "Agent::ButtonClicked");
-            BalloonOptionClicked = new Signal<object>(lifetime, "Agent::BalloonOptionClicked");
+            AgentClicked = new SimpleSignal("Agent::AgentClicked");
+            ButtonClicked = new Signal<string>("Agent::ButtonClicked");
+            BalloonOptionClicked = new Signal<object>("Agent::BalloonOptionClicked");
         }
 
-        public AgentCharacter AgentCharacter
-        {
-            get { return character.Value; }
-        }
+        public AgentCharacter AgentCharacter => character.Value;
 
         private void Do(Action<AgentCharacter> action)
         {
@@ -43,7 +41,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 action(c);
         }
 
-        private T Do<T>(Func<AgentCharacter, T> action)
+        private T? Do<T>(Func<AgentCharacter, T> action)
         {
             var c = character.Value;
             return c != null ? action(c) : default(T);
@@ -90,8 +88,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Do(c => c.ShowBalloon(lifetime, header, message, options, buttons, activate, init));
         }
 
-        public ISimpleSignal AgentClicked { get; private set; }
-        public ISignal<string> ButtonClicked { get; private set; }
-        public IUntypedSignal BalloonOptionClicked { get; private set; }
+        public ISimpleSignal AgentClicked { get; }
+        public ISignal<string> ButtonClicked { get; }
+        public IUntypedSignal BalloonOptionClicked { get; }
     }
 }

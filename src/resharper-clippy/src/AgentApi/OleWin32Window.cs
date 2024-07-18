@@ -13,13 +13,10 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         public static IWin32Window FromIOleWindow(object o)
         {
-            var handle = IntPtr.Zero;
-            var oleWindow = o as IOleWindow;
-            if (oleWindow != null)
-                handle = oleWindow.GetWindow();
+            var handle = o is IOleWindow oleWindow ? oleWindow.GetWindow() : IntPtr.Zero;
             return new OleWin32Window(handle);
         }
 
-        public IntPtr Handle { get; private set; }
+        public IntPtr Handle { get; }
     }
 }

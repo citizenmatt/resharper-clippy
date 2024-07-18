@@ -1,41 +1,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
-using JetBrains.Threading;
-using JetBrains.UI.ActionsRevised;
-using JetBrains.UI.ActionsRevised.Handlers;
-using JetBrains.UI.ActionsRevised.Loader;
+using JetBrains.Application.Threading;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Handlers;
+using JetBrains.Application.UI.ActionsRevised.Loader;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Application.UI.DataContext;
+using JetBrains.Lifetimes;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
-    public class InspectThisAction : IExecutableAction
+    public class InspectThisAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IThreading threading)
+        : IExecutableAction
     {
-        private readonly Lifetime lifetime;
-        private readonly Agent agent;
-        private readonly IActionManager actionManager;
-        private readonly IThreading threading;
-
-        public InspectThisAction(Lifetime lifetime, Agent agent, IActionManager actionManager, IThreading threading)
-        {
-            this.lifetime = lifetime;
-            this.agent = agent;
-            this.actionManager = actionManager;
-            this.threading = threading;
-        }
-
         public bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate)
         {
-            if (context.GetData(JetBrains.UI.DataConstants.PopupWindowContextSource) == null)
+            if (context.GetData(UIDataConstants.PopupWindowContextSource) == null)
                 return false;
 
             var menuActionGroup = GetMenuActionGroup();
-            if (menuActionGroup == null)
-                return false;
-
-            return menuActionGroup.MenuChildren.OfType<IActionDefWithId>().Any(executableAction => actionManager.Handlers.Evaluate(executableAction, context).IsAvailable);
+            return menuActionGroup != null
+                   && menuActionGroup.MenuChildren.OfType<IActionDefWithId>().Any(executableAction => actionManager.Handlers.Evaluate(executableAction, context).IsAvailable);
         }
 
         public void Execute(IDataContext context, DelegateExecute nextExecute)
@@ -44,7 +32,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             if (actionGroup == null)
                 return;
 
-            var lifetimeDefinition = Lifetimes.Define(lifetime);
+            var lifetimeDefinition = lifetime.CreateNested();
 
             var options = new List<BalloonOption>();
             foreach (var action in GetAvailableActions(actionGroup, context, actionManager))
@@ -54,15 +42,15 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             }
 
             agent.ShowBalloon(lifetimeDefinition.Lifetime, "Inspect This", string.Empty,
-                options, new [] { "Done" }, true,
+                options, ["Done"], true,
                 balloonLifetime =>
                 {
                     agent.BalloonOptionClicked.Advise(balloonLifetime, o =>
                     {
                         lifetimeDefinition.Terminate();
 
-                        var action = o as IActionDefWithId;
-                        threading.ExecuteOrQueue("InspectThisItem", () => action.EvaluateAndExecute(actionManager));
+                        if (o is IActionDefWithId action)
+                            threading.ExecuteOrQueue("InspectThisItem", () => action.EvaluateAndExecute(actionManager));
                     });
 
                     agent.ButtonClicked.Advise(balloonLifetime, _ => lifetimeDefinition.Terminate());

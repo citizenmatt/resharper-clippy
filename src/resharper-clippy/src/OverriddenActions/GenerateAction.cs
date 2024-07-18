@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Lifetimes;
 using JetBrains.ReSharper.Feature.Services.Generate.Actions;
-using JetBrains.UI.ActionsRevised;
-using JetBrains.Util;
+using JetBrains.UI.RichText;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
@@ -27,18 +28,14 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             actionHelper.Execute(dataContext, nextExecute);
         }
 
-        protected override bool ShowMenuWithOneItem
-        {
-            get { return true; }
-        }
+        protected override bool ShowMenuWithOneItem => true;
 
 
-        ICollection<IGenerateWorkflowProvider> IOriginalActionHandler.GetWorkflowProviders()
-        {
-            return GetWorkflowProviders();
-        }
+        ICollection<IGenerateWorkflowProvider> IOriginalActionHandler.GetWorkflowProviders() => GetWorkflowProviders();
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<IGenerateActionWorkflow, IGenerateWorkflowProvider> item1, Pair<IGenerateActionWorkflow, IGenerateWorkflowProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(
+            (IGenerateActionWorkflow, IGenerateWorkflowProvider) item1,
+            (IGenerateActionWorkflow, IGenerateWorkflowProvider) item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
@@ -53,17 +50,13 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             return IsEnabled(context, workflow);
         }
 
-        void IOriginalActionHandler.Execute(IDataContext context,
-            IGenerateActionWorkflow workflow)
+        void IOriginalActionHandler.Execute(IDataContext context, IGenerateActionWorkflow workflow)
         {
             Execute(context, workflow);
         }
 
-        bool IOriginalActionHandler.ShowMenuWithOneItem
-        {
-            get { return ShowMenuWithOneItem; }
-        }
+        bool IOriginalActionHandler.ShowMenuWithOneItem => ShowMenuWithOneItem;
 
-        string IOriginalActionHandler.Caption { get { return base.Caption; } }
+        RichText IOriginalActionHandler.Caption => base.Caption;
     }
 }

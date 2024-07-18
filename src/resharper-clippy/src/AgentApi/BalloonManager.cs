@@ -3,21 +3,15 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon;
 using JetBrains.DataFlow;
+using JetBrains.Lifetimes;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
-    public class BalloonManager
+    public class BalloonManager(Lifetime overallLifetime)
     {
-        private readonly SequentialLifetimes balloonLifetimes;
+        private readonly SequentialLifetimes balloonLifetimes = new(overallLifetime);
         private BalloonWindow balloonWindow;
         private BalloonWindowHost host;
-
-        public BalloonManager(Lifetime overallLifetime)
-        {
-            balloonLifetimes = new SequentialLifetimes(overallLifetime);
-            ButtonClicked = new Signal<string>(overallLifetime, "BalloonManager::ButtonClicked");
-            BalloonOptionClicked = new Signal<object>(overallLifetime, "BalloonManager::BalloonOptionClicked");
-        }
 
         public void CreateNew(Lifetime clientLifetime, Action<Lifetime> init)
         {
@@ -32,9 +26,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                 // If the client wants to hide the balloon, they can terminate clientLifetime
                 // If another client calls CreateNew, balloonLifetimes.Next terminates
                 // balloonLifetime. Whichever lifetime terminates first will cause
-                // combinedLifetime to terminate, closing the window. 
-                var combinedLifetime = Lifetimes.CreateIntersection2(clientLifetime, balloonLifetime).Lifetime;
-                combinedLifetime.AddAction(() =>
+                // combinedLifetime to terminate, closing the window.
+                var combinedLifetime = clientLifetime.Intersect(balloonLifetime);
+                combinedLifetime.OnTermination(() =>
                 {
                     if (host != null)
                     {
@@ -101,11 +95,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
         /// <summary>
         /// Passes through the string of the button
         /// </summary>
-        public ISignal<string> ButtonClicked { get; private set; }
+        public ISignal<string> ButtonClicked { get; } = new Signal<string>("BalloonManager::ButtonClicked");
 
         /// <summary>
         /// Passes through the object Tag from the option
         /// </summary>
-        public IUntypedSignal BalloonOptionClicked { get; private set; }
+        public IUntypedSignal BalloonOptionClicked { get; } = new Signal<object>("BalloonManager::BalloonOptionClicked");
     }
 }

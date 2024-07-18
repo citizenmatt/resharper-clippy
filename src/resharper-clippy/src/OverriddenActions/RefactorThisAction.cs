@@ -1,20 +1,21 @@
+using System;
 using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.UI.Actions;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Menu;
+using JetBrains.Lifetimes;
 using JetBrains.ReSharper.Feature.Services.Refactorings;
 using JetBrains.ReSharper.Refactorings.WorkflowNew;
-using JetBrains.UI.ActionsRevised;
 using JetBrains.UI.RichText;
-using JetBrains.Util;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
 {
     using ExtensibleActionHelper = AgentExtensibleAction<IRefactoringWorkflowProvider, IRefactoringWorkflow, RefactoringActionGroup>;
     using IOriginalActionHandler = IOriginalActionHandler<IRefactoringWorkflowProvider, IRefactoringWorkflow, RefactoringActionGroup>;
 
-    public class RefactorThisAction : IntroduceWithOccurencesAction<IRefactoringWorkflowProvider>,
+    public class RefactorThisAction : IntroduceWithOccurrencesAction<IRefactoringWorkflowProvider>,
         IExecutableAction, IOriginalActionHandler
     {
         private readonly ExtensibleActionHelper actionHelper;
@@ -24,10 +25,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             actionHelper = new ExtensibleActionHelper(lifetime, this, agent, actionManager);
         }
 
-        protected override RichText Caption
-        {
-            get { return "Refactor This"; }
-        }
+        protected override RichText Caption => "Refactor This";
 
 
         void IExecutableAction.Execute(IDataContext dataContext, DelegateExecute nextExecute)
@@ -40,7 +38,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             return GetWorkflowProviders();
         }
 
-        int IOriginalActionHandler.CompareWorkflowItems(Pair<IRefactoringWorkflow, IRefactoringWorkflowProvider> item1, Pair<IRefactoringWorkflow, IRefactoringWorkflowProvider> item2)
+        int IOriginalActionHandler.CompareWorkflowItems(
+            ValueTuple<IRefactoringWorkflow, IRefactoringWorkflowProvider> item1,
+            ValueTuple<IRefactoringWorkflow, IRefactoringWorkflowProvider> item2)
         {
             return CompareWorkflowItems(item1, item2);
         }
@@ -60,11 +60,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.OverriddenActions
             Execute(context, workflow);
         }
 
-        bool IOriginalActionHandler.ShowMenuWithOneItem
-        {
-            get { return ShowMenuWithOneItem; }
-        }
+        bool IOriginalActionHandler.ShowMenuWithOneItem => ShowMenuWithOneItem;
 
-        string IOriginalActionHandler.Caption { get { return Caption; } }
+        RichText IOriginalActionHandler.Caption => Caption;
     }
 }

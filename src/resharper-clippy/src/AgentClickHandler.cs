@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application;
-using JetBrains.DataFlow;
-using JetBrains.Threading;
-using JetBrains.UI.ActionsRevised.Handlers;
-using JetBrains.UI.ActionSystem.ActionManager;
+using JetBrains.Application.Threading;
+using JetBrains.Application.UI.Actions.ActionManager;
+using JetBrains.Application.UI.ActionsRevised.Handlers;
+using JetBrains.Lifetimes;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
@@ -16,8 +15,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
         private readonly IActionManager actionManager;
         private readonly IThreading threading;
 
-        public AgentClickHandler(Lifetime lifetime, Agent agent,
-            IActionManager actionManager, IThreading threading)
+        public AgentClickHandler(Lifetime lifetime, Agent agent, IActionManager actionManager, IThreading threading)
         {
             this.actionManager = actionManager;
             this.threading = threading;
@@ -30,7 +28,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             agent.AgentClicked.Advise(lifetime, _ =>
             {
-                var lifetimeDefinition = Lifetimes.Define(lifetime);
+                var lifetimeDefinition = lifetime.CreateNested();
 
                 var options = GetOptions();
 
@@ -81,21 +79,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             if (action == null || !actionManager.Handlers.StaticEvaluate(action).IsAvailable)
                 return;
 
-            var shortcutText = action.GetPresentableShortcutText(actionManager.Shortcuts);
+            var shortcutText = actionManager.PresentableTexts.GetShortcutText(action);
             if (!string.IsNullOrEmpty(shortcutText))
-                shortcutText = string.Format(" ({0})", shortcutText);
+                shortcutText = $" ({shortcutText})";
 
             options.Add(new BalloonOption(action.Text + shortcutText, actionId));
         }
 
         private void ExecuteOption(object tag)
         {
-            var action = tag as Action;
-            if (action != null)
+            if (tag is Action action)
                 action();
 
-            var actionId = tag as string;
-            if (actionId != null)
+            if (tag is string actionId)
                 ExecuteAction(actionId);
         }
 

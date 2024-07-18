@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Forms;
 using DoubleAgent.Control;
 using JetBrains.DataFlow;
 using JetBrains.Extension;
+using JetBrains.Lifetimes;
+using JetBrains.UI.Utils;
 using JetBrains.Util.Interop;
 
 namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 {
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class AgentCharacter : ICharacterEvents
     {
         private readonly AgentManager agentManager;
@@ -28,9 +32,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             Character = character;
             ScaleCharacterForDpi();
 
-            AgentClicked = new SimpleSignal(lifetime, "AgentCharacter::AgentClicked");
-            ButtonClicked = new Signal<string>(lifetime, "AgentCharacter::ButtonClicked");
-            BalloonOptionClicked = new Signal<object>(lifetime, "AgentCharacter::BalloonOptionClicked");
+            AgentClicked = new SimpleSignal("AgentCharacter::AgentClicked");
+            ButtonClicked = new Signal<string>("AgentCharacter::ButtonClicked");
+            BalloonOptionClicked = new Signal<object>("AgentCharacter::BalloonOptionClicked");
 
             balloon = new BalloonManager(lifetime);
             balloon.ButtonClicked.FlowInto(lifetime, ButtonClicked);
@@ -46,7 +50,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             random = new Random();
         }
 
-        public Character Character { get; private set; }
+        public Character Character { get; }
 
         // Requests are a PITA. Everything you do returns a request so you can track it
         // and act on completion. They're queued, so happen consecutively. But certain
@@ -65,8 +69,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         private void ScaleCharacterForDpi()
         {
-            Character.SetSize((short)(Character.OriginalWidth * DpiUtil.DpiHorizontalFactor),
-                (short)(Character.OriginalHeight * DpiUtil.DpiVerticalFactor));
+            var dpiResolution = DpiResolutions.FromWin32Window(owner);
+            Character.SetSize((short)(Character.OriginalWidth * (dpiResolution.DpiX/DpiResolution.DeviceIndependent96DpiValue)),
+                (short)(Character.OriginalHeight * (dpiResolution.DpiY/DpiResolution.DeviceIndependent96DpiValue)));
         }
 
         public void Hide(bool fancy = false)
@@ -95,6 +100,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             // TODO: Is that wise? Is the agent smart enough to do both?
             RegisterRequest(Character.MoveTo(x, y));
             balloon.UpdateAnchorPoint(x, y, Character.Width, Character.Height);
+        }
+
+        public void SetSize(short width, short height)
+        {
+
         }
 
         public void Show(bool fancy = false)
@@ -171,7 +181,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
             var request = Character.Play(animation);
             RegisterRequest(request);
-            lifetime.AddAction(() =>
+            lifetime.OnTermination(() =>
             {
                 var requestStatus = (RequestStatus) request.Status;
                 if (requestStatus == RequestStatus.Pending || requestStatus == RequestStatus.InProgress)
@@ -204,7 +214,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             IList<BalloonOption> options, IEnumerable<string> buttons, bool activate, Action<Lifetime> init)
         {
             // StopAllAnimations doesn't seem to reset the automatic idle animation.
-            // Showing the real balloon does, but we're a fake balloon. Kick of the 
+            // Showing the real balloon does, but we're a fake balloon. Kick of the
             // normal idle animation while we show the balloon, just so the agent isn't
             // snoozing
             if (Character.IdleState)
@@ -225,22 +235,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             });
         }
 
-        public bool Visible
-        {
-            get { return Character.Visible; }
-        }
+        public bool Visible => Character.Visible;
 
-        public ISimpleSignal AgentClicked { get; private set; }
+        public ISimpleSignal AgentClicked { get; }
 
         /// <summary>
         /// Passes through the string of the button text
         /// </summary>
-        public ISignal<string> ButtonClicked { get; private set; }
+        public ISignal<string> ButtonClicked { get; }
 
         /// <summary>
         /// Passes through the object of the option's Tag
         /// </summary>
-        public IUntypedSignal BalloonOptionClicked { get; private set; }
+        public IUntypedSignal BalloonOptionClicked { get; }
 
         void ICharacterEvents.OnRequestStart(Request request)
         {
@@ -248,8 +255,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
 
         void ICharacterEvents.OnRequestComplete(Request request)
         {
-            Action handler;
-            if (requestHandlers.TryGetValue(request.ID, out handler))
+            if (requestHandlers.TryGetValue(request.ID, out var handler))
             {
                 handler();
                 requestHandlers.Remove(request.ID);
@@ -269,8 +275,8 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
             if (button == 2)
             {
                 var menuStrip = new ContextMenuStrip();
-                menuStrip.Items.Add("Hide", null, (_, __) => Hide());
-                menuStrip.Items.Add("Animate", null, (_, __) => PlayRandom());
+                menuStrip.Items.Add("Hide", null, (_, _) => Hide());
+                menuStrip.Items.Add("Animate", null, (_, _) => PlayRandom());
                 menuStrip.Items.Add("-");
                 var soundEffectsMenuItem = new ToolStripMenuItem
                 {
@@ -278,11 +284,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi
                     Checked = Character.SoundEffectsEnabled,
                     Text = "Sound Effects"
                 };
-                soundEffectsMenuItem.Click += 
-                    (sender, args) => Character.SoundEffectsEnabled = soundEffectsMenuItem.Checked;
+                soundEffectsMenuItem.Click +=
+                    (_, _) => Character.SoundEffectsEnabled = soundEffectsMenuItem.Checked;
                 menuStrip.Items.Add(soundEffectsMenuItem);
                 menuStrip.Show(x, y);
-                menuStrip.Closed += (sender, args) =>
+                menuStrip.Closed += (_, _) =>
                 {
                     // TODO: Add settings support to TestHarness
                     if (settingsStore == null)

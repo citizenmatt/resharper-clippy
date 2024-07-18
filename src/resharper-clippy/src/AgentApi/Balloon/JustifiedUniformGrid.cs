@@ -21,7 +21,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
             if (columns == 1)
                 return base.MeasureOverride(constraint);
 
-            var lastItem = InternalChildren[InternalChildren.Count - 1];
+            var lastItem = InternalChildren[^1];
             lastItem.Measure(availableSize);
 
             var firstItemWidth = firstItem.DesiredSize.Width;
@@ -56,7 +56,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
                 return base.ArrangeOverride(arrangeSize);
 
             var firstItem = InternalChildren[0];
-            var lastItem = InternalChildren[InternalChildren.Count - 1];
+            var lastItem = InternalChildren[^1];
 
             var firstItemSize = firstItem.DesiredSize;
             var lastItemSize = lastItem.DesiredSize;

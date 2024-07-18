@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using JetBrains.DataFlow;
+﻿using System.Collections.Generic;
 using JetBrains.DocumentModel;
+using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
 using JetBrains.TextControl;
 using JetBrains.TextControl.DocumentMarkup;
@@ -17,26 +16,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     public class HighlightingTracker
     {
         public HighlightingTracker(Lifetime lifetime, ITextControlManager textControlManager,
-            IDocumentMarkupManager markupManager, IViewable<IHighlightingChangeHandler> handlers)
+            IDocumentMarkupManager markupManager, IEnumerable<IHighlightingChangeHandler> handlers)
         {
-            textControlManager.TextControls.View(lifetime, (textControlLifetime, textControl) =>
-            {
-                var markupModel = markupManager.GetMarkupModel(textControl.Document);
-
-                Action<DocumentMarkupModifiedEventArgs> onChanged = args =>
+            var sink = new AnonymousDocumentMarkupEventsSink(
+                (markup, added, removed, modified) =>
                 {
-                    Lifetimes.Using(l =>
-                    {
-                        handlers.View(l, (_, h) =>
-                        {
-                            h.OnHighlightingChanged(textControl.Document, args.Added, args.Removed, args.Modified);
-                        });
-                    });
-                };
-
-                markupModel.Changed += onChanged;
-                textControlLifetime.AddAction(() => markupModel.Changed -= onChanged);
-            });
+                    foreach (var handler in handlers)
+                        handler.OnHighlightingChanged(markup.Document, added, removed, modified);
+                }, null);
+            textControlManager.TextControls.View(lifetime,
+                (textControlLifetime, textControl) =>
+                {
+                    markupManager.AdviseMarkupEvents(textControlLifetime, textControl.Document, sink);
+                });
         }
     }
 

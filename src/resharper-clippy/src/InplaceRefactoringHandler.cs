@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using CitizenMatt.ReSharper.Plugins.Clippy.AgentApi;
-using JetBrains.ActionManagement;
 using JetBrains.Application.DataContext;
-using JetBrains.DataFlow;
+using JetBrains.Application.Threading;
+using JetBrains.Application.UI.Actions.ActionManager;
 using JetBrains.DocumentModel;
+using JetBrains.Lifetimes;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.DataContext;
 using JetBrains.ReSharper.Feature.Services.Refactorings;
@@ -16,32 +17,18 @@ using JetBrains.Threading;
 namespace CitizenMatt.ReSharper.Plugins.Clippy
 {
     [SolutionComponent]
-    public class InplaceRefactoringHandler : IHighlightingChangeHandler
+    public class InplaceRefactoringHandler(Lifetime lifetime,
+                                           Agent agent,
+                                           InplaceRefactoringsHighlightingManagerWrapper highlightingManager,
+                                           IThreading threading,
+                                           IActionManager actionManager,
+                                           ISolution solution)
+        : IHighlightingChangeHandler
     {
-        private readonly SequentialLifetimes sequentialLifetimes;
-        private readonly Lifetime lifetime;
-        private readonly Agent agent;
-        private readonly InplaceRefactoringsHighlightingManagerWrapper highlightingManager;
-        private readonly IThreading threading;
-        private readonly IActionManager actionManager;
-        private readonly ISolution solution;
+        private readonly SequentialLifetimes sequentialLifetimes = new(lifetime);
 
         private IHighlighter currentHighlighter;
         private LifetimeDefinition deferredRemovalLifetimeDefinition;
-
-        public InplaceRefactoringHandler(Lifetime lifetime, Agent agent,
-            InplaceRefactoringsHighlightingManagerWrapper highlightingManager,
-            IThreading threading, IActionManager actionManager, ISolution solution)
-        {
-            this.lifetime = lifetime;
-            this.agent = agent;
-            this.highlightingManager = highlightingManager;
-            this.threading = threading;
-            this.actionManager = actionManager;
-            this.solution = solution;
-
-            sequentialLifetimes = new SequentialLifetimes(lifetime);
-        }
 
         public void OnHighlightingChanged(IDocument document, ICollection<IHighlighter> added, ICollection<IHighlighter> removed, ICollection<IHighlighter> modified)
         {
@@ -82,9 +69,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         private void DeferHideBalloon()
         {
-            deferredRemovalLifetimeDefinition = Lifetimes.Define(lifetime);
+            deferredRemovalLifetimeDefinition = lifetime.CreateNested();
 
-            threading.ReentrancyGuard.ExecuteOrQueue(deferredRemovalLifetimeDefinition.Lifetime, 
+            threading.ReentrancyGuard.ExecuteOrQueue(deferredRemovalLifetimeDefinition.Lifetime,
                 "Clippy::InplaceRefactoringHandler::DeferredHideBalloon",
                 () =>
                 {
@@ -95,8 +82,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
         private void CancelHideBalloon()
         {
-            if (deferredRemovalLifetimeDefinition != null)
-                deferredRemovalLifetimeDefinition.Terminate();
+            deferredRemovalLifetimeDefinition?.Terminate();
         }
 
         private bool IsNewHighlighter(IHighlighter highlighter)
@@ -107,7 +93,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             if (highlighter == currentHighlighter)
                 return false;
 
-            return !highlighter.Range.Intersects(currentHighlighter.Range);
+            return !highlighter.Range.StrictIntersects(currentHighlighter.Range);
         }
 
         private void ShowRefactoringAdvice(IHighlighter highlighter, InplaceRefactoringInfo refactoringInfo)
@@ -116,7 +102,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             {
                 var message = GetMessage();
                 var options = GetOptions(refactoringInfo);
-                agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, new[] { "Cancel" }, false,
+                agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, ["Cancel"], false,
                     balloonLifetime =>
                     {
                         currentHighlighter = highlighter;
@@ -130,8 +116,7 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                             // the balloon closes
                             sequentialLifetimes.TerminateCurrent();
 
-                            var action = tag as Action;
-                            if (action != null)
+                            if (tag is Action action)
                                 action();
                         });
                     });
@@ -160,29 +145,28 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                     break;
             }
 
-            Action applyRefactoringAction = () =>
-            {
-                ReadLockCookie.GuardedExecute(() =>
-                {
-                    Lifetimes.Using(l =>
-                    {
-                        // I think this will fail if the cursor moves out of the refactoring range
-                        var dataRules = DataRules.AddRule("DoInplaceRefactoringContextActionBase",
-                            ProjectModelDataConstants.SOLUTION, solution);
-                        var dataContext = actionManager.DataContexts.CreateOnSelection(l, dataRules);
-                        RefactoringActionUtil.ExecuteRefactoring(dataContext,
-                            refactoringInfo.CreateRefactoringWorkflow());
-                    });
-                });
-            };
             // ReSharper restore ConvertToLambdaExpression
 
             var options = new List<BalloonOption>
             {
-                new BalloonOption(applyRefactoringMessage, applyRefactoringAction),
-                new BalloonOption("Just edit the code without help")
+                new(applyRefactoringMessage, (Action)ApplyRefactoringAction),
+                new("Just edit the code without help")
             };
             return options;
+
+            void ApplyRefactoringAction()
+            {
+                ReadLockCookie.GuardedExecute(() =>
+                {
+                    Lifetime.Using(l =>
+                    {
+                        // I think this will fail if the cursor moves out of the refactoring range
+                        var dataRules = DataRules.AddRule("DoInplaceRefactoringContextActionBase", ProjectModelDataConstants.SOLUTION, solution);
+                        var dataContext = actionManager.DataContexts.CreateOnSelection(l, dataRules);
+                        RefactoringActionUtil.ExecuteRefactoring(dataContext, refactoringInfo.CreateRefactoringWorkflow());
+                    });
+                });
+            }
         }
     }
 }

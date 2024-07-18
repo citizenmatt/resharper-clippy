@@ -4,9 +4,9 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy.AgentApi.Balloon
 {
     public static class Commands
     {
-        public readonly static RoutedCommand SeeNextCommand = new RoutedCommand();
-        public readonly static RoutedCommand SeePreviousCommand = new RoutedCommand();
-        public readonly static RoutedCommand OptionCommand = new RoutedCommand();
-        public readonly static RoutedCommand ButtonCommand = new RoutedCommand();
+        public static readonly RoutedCommand SeeNextCommand = new RoutedCommand();
+        public static readonly RoutedCommand SeePreviousCommand = new RoutedCommand();
+        public static readonly RoutedCommand OptionCommand = new RoutedCommand();
+        public static readonly RoutedCommand ButtonCommand = new RoutedCommand();
     }
 }
