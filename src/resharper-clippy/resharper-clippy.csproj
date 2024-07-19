@@ -8,6 +8,7 @@
     <PackageId>CitizenMatt.Clippy</PackageId>
     <DefineConstants>$(DefineConstants);RESHARPER</DefineConstants>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
