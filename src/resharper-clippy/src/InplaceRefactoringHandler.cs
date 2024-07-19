@@ -7,9 +7,13 @@ using JetBrains.Application.Threading;
 using JetBrains.Application.UI.Actions.ActionManager;
 using JetBrains.DocumentModel;
 using JetBrains.Lifetimes;
+using JetBrains.Metadata.Reader.API;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.DataContext;
 using JetBrains.ReSharper.Feature.Services.Refactorings;
+using JetBrains.ReSharper.InplaceRefactorings;
+using JetBrains.ReSharper.Psi;
+using JetBrains.ReSharper.Psi.Files;
 using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.TextControl.DocumentMarkup;
 using JetBrains.Threading;
@@ -19,16 +23,19 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
     [SolutionComponent]
     public class InplaceRefactoringHandler(Lifetime lifetime,
                                            Agent agent,
-                                           InplaceRefactoringsHighlightingManagerWrapper highlightingManager,
+                                           InplaceRefactoringsManager inplaceRefactoringsManager,
+                                           IPsiFiles psiFiles,
                                            IThreading threading,
                                            IActionManager actionManager,
                                            ISolution solution)
         : IHighlightingChangeHandler
     {
-        private readonly SequentialLifetimes sequentialLifetimes = new(lifetime);
+        private readonly SequentialLifetimes balloonLifetimes = new(lifetime);
+        // private readonly SequentialLifetimes highlighterLifetimes = new(lifetime);
 
         private IHighlighter currentHighlighter;
-        private LifetimeDefinition deferredRemovalLifetimeDefinition;
+        // private bool showingBalloon;
+        private LifetimeDefinition scheduledRemovalLifetimeDefinition;
 
         public void OnHighlightingChanged(IDocument document, ICollection<IHighlighter> added, ICollection<IHighlighter> removed, ICollection<IHighlighter> modified)
         {
@@ -38,18 +45,58 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             // -> Enqueue the removal. Return
             // -> Check to see if it's a "different" highlight. If not, cancel the removal
             // -> If it is, cancel the removal, and show the advice
+            var sourceFile = document.GetPsiSourceFile(solution);
             var highlighter = added.FirstOrDefault(IsInplaceRefactoringHighlight);
-            if (highlighter != null)
+            if (sourceFile != null && highlighter != null)
             {
                 if (IsNewHighlighter(highlighter))
                 {
-                    var refactoringType = highlightingManager.GetInplaceRefactoringType(document,
-                        highlighter.Range.StartOffset);
-                    if (refactoringType.Type == InplaceRefactoringType.None)
+                    // var newHighlightLifetime = highlighterLifetimes.Next();
+                    // newHighlightLifetime.OnTermination(() => currentHighlighter = null);
+                    // currentHighlighter = highlighter;
+
+                    IRefactoringInfo refactoringInfo;
+                    using (CompilationContextCookie.GetOrCreate(UniversalModuleReferenceContext.Instance))
+                    using (ReadLockCookie.Create())
+                    {
+                        psiFiles.CommitAllDocuments();
+                        refactoringInfo = inplaceRefactoringsManager.GetRefactoringAvailable(sourceFile, highlighter.Range.StartOffset);
+                    }
+
+                    if (refactoringInfo == null)
+                    {
+                        // Throws a bunch of seemingly unrelated exceptions. No idea why
+                        // if (highlighter is HighlighterOnRangeMarker highlighterOnRangeMarker)
+                        // {
+                        //     void RangeMarkerOnChanged(object sender, RangeMarkerChangedEventArgs e)
+                        //     {
+                        //         if (showingBalloon) return;
+                        //
+                        //         IRefactoringInfo info;
+                        //         using (CompilationContextCookie.GetOrCreate(UniversalModuleReferenceContext.Instance))
+                        //         using (ReadLockCookie.Create())
+                        //         {
+                        //             psiFiles.CommitAllDocuments();
+                        //             info = inplaceRefactoringsManager.GetRefactoringAvailable(sourceFile,
+                        //                 e.NewRange.StartOffset);
+                        //         }
+                        //
+                        //         if (info != null)
+                        //         {
+                        //             CancelHideBalloon();
+                        //             ShowRefactoringAdvice(highlighter, info);
+                        //         }
+                        //     }
+                        //
+                        //     highlighterOnRangeMarker.RangeMarker.Changed += RangeMarkerOnChanged;
+                        //     newHighlightLifetime.OnTermination(() => highlighterOnRangeMarker.RangeMarker.Changed -= RangeMarkerOnChanged);
+                        // }
+                        
                         return;
+                    }
 
                     CancelHideBalloon();
-                    ShowRefactoringAdvice(highlighter, refactoringType);
+                    ShowRefactoringAdvice(highlighter, refactoringInfo);
                 }
                 else
                 {
@@ -59,30 +106,33 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
 
             highlighter = removed.FirstOrDefault(IsInplaceRefactoringHighlight);
             if (highlighter != null)
-                DeferHideBalloon();
+            {
+                ScheduleHideBalloon();
+                // highlighterLifetimes.TerminateCurrent();
+            }
         }
 
         private static bool IsInplaceRefactoringHighlight(IHighlighter highlighter)
         {
-            return highlighter.AttributeId == "ReSharper Name or Signature Changed";
+            return highlighter.AttributeId == InplaceRefactoringsHighlightingManager.ENTITY_EDITED_ATTRIBUTE_ID;
         }
 
-        private void DeferHideBalloon()
+        private void ScheduleHideBalloon()
         {
-            deferredRemovalLifetimeDefinition = lifetime.CreateNested();
+            scheduledRemovalLifetimeDefinition = lifetime.CreateNested();
 
-            threading.ReentrancyGuard.ExecuteOrQueue(deferredRemovalLifetimeDefinition.Lifetime,
+            threading.ReentrancyGuard.ExecuteOrQueue(scheduledRemovalLifetimeDefinition.Lifetime,
                 "Clippy::InplaceRefactoringHandler::DeferredHideBalloon",
                 () =>
                 {
-                    sequentialLifetimes.TerminateCurrent();
+                    balloonLifetimes.TerminateCurrent();
                     currentHighlighter = null;
                 });
         }
 
         private void CancelHideBalloon()
         {
-            deferredRemovalLifetimeDefinition?.Terminate();
+            scheduledRemovalLifetimeDefinition?.Terminate();
         }
 
         private bool IsNewHighlighter(IHighlighter highlighter)
@@ -96,25 +146,28 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
             return !highlighter.Range.StrictIntersects(currentHighlighter.Range);
         }
 
-        private void ShowRefactoringAdvice(IHighlighter highlighter, InplaceRefactoringInfo refactoringInfo)
+        private void ShowRefactoringAdvice(IHighlighter highlighter, IRefactoringInfo refactoringInfo)
         {
-            sequentialLifetimes.Next(refactoringLifetime =>
+            balloonLifetimes.Next(refactoringLifetime =>
             {
                 var message = GetMessage();
                 var options = GetOptions(refactoringInfo);
                 agent.ShowBalloon(refactoringLifetime, string.Empty, message, options, ["Cancel"], false,
                     balloonLifetime =>
                     {
+                        // showingBalloon = true;
+                        // balloonLifetime.OnTermination(() => showingBalloon = false);
+
                         currentHighlighter = highlighter;
 
-                        agent.ButtonClicked.Advise(balloonLifetime, _ => sequentialLifetimes.TerminateCurrent());
+                        agent.ButtonClicked.Advise(balloonLifetime, _ => balloonLifetimes.TerminateCurrent());
                         agent.BalloonOptionClicked.Advise(balloonLifetime, tag =>
                         {
                             // Terminate first. This kills the balloon window before we start
                             // the refactoring UI. If we start the refactoring UI first, I think
                             // it picks up the balloon window as its parent, and it closes when
                             // the balloon closes
-                            sequentialLifetimes.TerminateCurrent();
+                            balloonLifetimes.TerminateCurrent();
 
                             if (tag is Action action)
                                 action();
@@ -129,27 +182,11 @@ namespace CitizenMatt.ReSharper.Plugins.Clippy
                    "Would you like help?";
         }
 
-        private IList<BalloonOption> GetOptions(InplaceRefactoringInfo refactoringInfo)
+        private IList<BalloonOption> GetOptions(IRefactoringInfo refactoringInfo)
         {
-            var applyRefactoringMessage = "Apply refactoring";
-            switch (refactoringInfo.Type)
-            {
-                case InplaceRefactoringType.Rename:
-                    applyRefactoringMessage = "Apply rename refactoring (Alt+Enter)";
-                    break;
-                case InplaceRefactoringType.ChangeSignature:
-                    applyRefactoringMessage = "Apply change signature refactoring (Alt+Enter)";
-                    break;
-                case InplaceRefactoringType.MoveStaticMembers:
-                    applyRefactoringMessage = "Apply move static members refactoring (Alt+Enter)";
-                    break;
-            }
-
-            // ReSharper restore ConvertToLambdaExpression
-
             var options = new List<BalloonOption>
             {
-                new(applyRefactoringMessage, (Action)ApplyRefactoringAction),
+                new(refactoringInfo.ContextActionTitle, (Action)ApplyRefactoringAction),
                 new("Just edit the code without help")
             };
             return options;
